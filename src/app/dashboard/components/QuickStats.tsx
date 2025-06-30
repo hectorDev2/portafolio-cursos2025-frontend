@@ -4,7 +4,8 @@ import { BarChart3, CheckCircle, MessageSquare } from "lucide-react";
 export default function QuickStats({
   portfolios,
 }: {
-  portfolios: Portfolio[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  portfolios: any[];
 }) {
   return (
     <div className="space-y-4">
