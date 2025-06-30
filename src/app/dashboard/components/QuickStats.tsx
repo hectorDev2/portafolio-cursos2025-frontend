@@ -1,11 +1,15 @@
 import React from "react";
 import { BarChart3, CheckCircle, MessageSquare } from "lucide-react";
 
+type Portfolio = {
+  status: string;
+  // Add other properties as needed
+};
+
 export default function QuickStats({
   portfolios,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  portfolios: any[];
+  portfolios: Portfolio[];
 }) {
   return (
     <div className="space-y-4">
