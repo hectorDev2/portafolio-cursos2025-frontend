@@ -1,6 +1,16 @@
 import React from "react";
 import { Plus } from "lucide-react";
-import type { Portfolio } from "../page";
+// import Portfolio from "../page"; // Remove this line if not needed for value usage
+
+// Define Portfolio type here or import it from the correct module
+type Portfolio = {
+  id: string;
+  courseName: string;
+  courseCode: string;
+  semester: string;
+  status: string;
+  completionPercentage: number;
+};
 
 export default function PortfolioSelector({
   portfolios,

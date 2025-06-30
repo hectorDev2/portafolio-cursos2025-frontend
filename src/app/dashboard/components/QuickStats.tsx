@@ -1,6 +1,5 @@
 import React from "react";
 import { BarChart3, CheckCircle, MessageSquare } from "lucide-react";
-import type { Portfolio } from "../page";
 
 export default function QuickStats({
   portfolios,
