@@ -480,14 +480,14 @@ const DashboardPage = () => {
 
         {/* Contenido Principal */}
         {currentPortfolio && (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="flex flex-col lg:grid lg:grid-cols-4 gap-6">
             {/* Sidebar de Secciones */}
-            <div className="lg:col-span-1">
+            <div className="mb-6 lg:mb-0 lg:col-span-1">
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                   Secciones del Portafolio
                 </h3>
-                <nav className="space-y-2">
+                <nav className="flex flex-row lg:flex-col gap-2">
                   {sections.map((section) => {
                     const Icon = section.icon;
                     const isActive = activeSection === section.id;
@@ -495,14 +495,14 @@ const DashboardPage = () => {
                       <button
                         key={section.id}
                         onClick={() => setActiveSection(section.id)}
-                        className={`w-full flex items-center px-3 py-2 rounded-lg text-left transition-colors ${
+                        className={`flex-1 lg:w-full flex items-center px-3 py-2 rounded-lg text-left transition-colors min-w-0 ${
                           isActive
                             ? "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
                             : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                         }`}
                       >
-                        <Icon className="w-5 h-5 mr-3" />
-                        <span className="text-sm font-medium">
+                        <Icon className="w-5 h-5 mr-3 flex-shrink-0" />
+                        <span className="text-sm font-medium truncate">
                           {section.name}
                         </span>
                       </button>
@@ -575,7 +575,7 @@ const DashboardPage = () => {
                               <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div>
-                              <h4 className="font-medium text-gray-900 dark:text-white">
+                              <h4 className="font-medium text-gray-900 dark:text-white break-words whitespace-pre-line max-w-[180px] sm:max-w-xs md:max-w-sm lg:max-w-md">
                                 {file.name}
                               </h4>
                               <p className="text-sm text-gray-500 dark:text-gray-400">
