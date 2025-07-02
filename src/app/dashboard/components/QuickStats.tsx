@@ -13,8 +13,8 @@ export default function QuickStats({
 }) {
   return (
     <div className="space-y-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <div className="flex items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 flex items-center">
           <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
             <BarChart3 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           </div>
@@ -27,9 +27,7 @@ export default function QuickStats({
             </p>
           </div>
         </div>
-      </div>
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <div className="flex items-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 flex items-center">
           <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
             <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
           </div>
@@ -42,9 +40,7 @@ export default function QuickStats({
             </p>
           </div>
         </div>
-      </div>
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <div className="flex items-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 flex items-center">
           <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
             <MessageSquare className="w-6 h-6 text-orange-600 dark:text-orange-400" />
           </div>
