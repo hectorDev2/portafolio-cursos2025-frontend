@@ -1,25 +1,12 @@
 "use client";
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Sun,
-  Moon,
-  Palette,
-  Home,
-  Shield,
-  LayoutDashboard,
-  User,
-} from "lucide-react";
+import { Home, Shield, LayoutDashboard, User, Settings } from "lucide-react";
 
-export default function AppNavigation({
-  isDarkMode,
-  toggleTheme,
-}: {
-  isDarkMode: boolean;
-  toggleTheme: () => void;
-}) {
+export default function AppNavigation() {
   const pathname = usePathname();
   const router = useRouter();
+  const isDarkMode = false;
 
   return (
     <>
@@ -86,36 +73,21 @@ export default function AppNavigation({
           <User className="w-6 h-6" />
         </button>
         <button
-          onClick={() => router.push("/palettes")}
+          onClick={() => router.push("/admin")}
           className={`p-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 ${
-            pathname === "/palettes"
+            pathname === "/admin"
               ? isDarkMode
-                ? "bg-green-600 text-white"
-                : "bg-green-600 text-white"
+                ? "bg-red-600 text-white"
+                : "bg-red-600 text-white"
               : isDarkMode
                 ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
                 : "bg-white text-gray-600 hover:bg-gray-100"
           }`}
-          title="Paletas de Colores"
+          title="Dashboard Administrador"
         >
-          <Palette className="w-6 h-6" />
+          <Settings className="w-6 h-6" />
         </button>
       </div>
-      {/* Botón de Toggle Tema */}
-      <button
-        onClick={toggleTheme}
-        className={`fixed top-6 right-6 p-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 z-10 ${
-          isDarkMode
-            ? "bg-yellow-500 text-gray-900 hover:bg-yellow-400"
-            : "bg-gray-800 text-yellow-400 hover:bg-gray-700"
-        }`}
-      >
-        {isDarkMode ? (
-          <Sun className="w-6 h-6" />
-        ) : (
-          <Moon className="w-6 h-6" />
-        )}
-      </button>
     </>
   );
 }
