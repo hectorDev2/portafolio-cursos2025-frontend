@@ -5,14 +5,11 @@ interface AuthFormProps {
   isLogin: boolean;
   showPassword: boolean;
   setShowPassword: (v: boolean) => void;
-  showConfirmPassword: boolean;
-  setShowConfirmPassword: (v: boolean) => void;
   formData: {
-    firstName: string;
-    lastName: string;
+    name?: string;
+    lastName?: string;
     email: string;
     password: string;
-    confirmPassword: string;
   };
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSubmit: (e: React.FormEvent) => void;
@@ -22,8 +19,6 @@ export default function AuthForm({
   isLogin,
   showPassword,
   setShowPassword,
-  showConfirmPassword,
-  setShowConfirmPassword,
   formData,
   handleInputChange,
   handleSubmit,
@@ -51,7 +46,7 @@ export default function AuthForm({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label
-              htmlFor="firstName"
+              htmlFor="name"
               className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200"
             >
               Nombre
@@ -60,9 +55,9 @@ export default function AuthForm({
               <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
+                id="name"
+                name="name"
+                value={formData.name}
                 onChange={handleInputChange}
                 className="w-full pl-12 pr-4 py-4 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-600 placeholder-gray-500 dark:placeholder-gray-400"
                 placeholder="Tu nombre"
@@ -150,43 +145,6 @@ export default function AuthForm({
           </button>
         </div>
       </div>
-
-      {/* Confirm Password Field (Registration only) */}
-      {!isLogin && (
-        <div>
-          <label
-            htmlFor="confirmPassword"
-            className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200"
-          >
-            Confirmar contraseña
-          </label>
-          <div className="relative">
-            <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              className="w-full pl-12 pr-14 py-4 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-600 placeholder-gray-500 dark:placeholder-gray-400"
-              placeholder="••••••••"
-              required={!isLogin}
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-            >
-              {showConfirmPassword ? (
-                <EyeOff className="w-5 h-5" />
-              ) : (
-                <Eye className="w-5 h-5" />
-              )}
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Terms and Conditions (Registration only) */}
       {!isLogin && (
         <div className="flex items-start space-x-3">
