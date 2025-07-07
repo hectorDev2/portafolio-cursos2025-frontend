@@ -1,7 +1,14 @@
 "use client";
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Shield, LayoutDashboard, User, Settings } from "lucide-react";
+import {
+  Home,
+  Shield,
+  LayoutDashboard,
+  User,
+  Settings,
+  HelpCircle,
+} from "lucide-react";
 
 export default function AppNavigation() {
   const pathname = usePathname();
@@ -11,7 +18,7 @@ export default function AppNavigation() {
   return (
     <>
       {/* Botones de navegación */}
-      <div className="fixed top-6 left-6 flex space-x-3 z-10">
+      <div className="fixed bottom-6 right-6 flex space-x-3 z-10">
         <button
           onClick={() => router.push("/")}
           className={`p-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 ${
@@ -86,6 +93,19 @@ export default function AppNavigation() {
           title="Dashboard Administrador"
         >
           <Settings className="w-6 h-6" />
+        </button>
+        <button
+          onClick={() => router.push("/support")}
+          className={`p-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 ${
+            pathname === "/support"
+              ? isDarkMode
+                ? "bg-green-600 text-white"
+                : "bg-green-600 text-white"
+              : !isDarkMode && "bg-white text-gray-600 "
+          }`}
+          title="Soporte y Ayuda"
+        >
+          <HelpCircle className="w-6 h-6" />
         </button>
       </div>
     </>
