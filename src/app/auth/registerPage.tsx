@@ -52,7 +52,10 @@ export default function RegisterPage({
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
         body: JSON.stringify(formData),
       });
       const data = await res.json();
