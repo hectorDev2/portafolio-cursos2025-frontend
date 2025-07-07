@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import AuthHeader from "./components/AuthHeader";
-import AuthFooter from "./components/AuthFooter";
 import AuthForm from "./components/AuthForm";
+import Cookies from "js-cookie";
 import AuthToggle from "./components/AuthToggle";
 
 // Simple Alert Component
@@ -103,7 +103,6 @@ export default function RegisterPage({
             handleSubmit={handleSubmit}
           />
         </div>
-        <AuthFooter isLogin={false} setIsLogin={setIsLogin} />
       </div>
     </div>
   );

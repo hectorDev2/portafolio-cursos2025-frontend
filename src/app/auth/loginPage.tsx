@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import AuthHeader from "./components/AuthHeader";
-import AuthFooter from "./components/AuthFooter";
 import AuthForm from "./components/AuthForm";
 import AuthToggle from "./components/AuthToggle";
 import { useRouter } from "next/navigation";
@@ -103,7 +102,6 @@ export default function LoginPage({
             handleSubmit={handleSubmit}
           />
         </div>
-        <AuthFooter isLogin={true} setIsLogin={() => {}} />
       </div>
     </div>
   );
