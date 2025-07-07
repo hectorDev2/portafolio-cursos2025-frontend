@@ -33,7 +33,15 @@ export default function DashboardPage() {
     return portfolios.find((p) => p.id === selectedPortfolioId) || null;
   }, [selectedPortfolioId, portfolios]);
 
-  const handleCreatePortfolio = ({ title, description, semester }: { title: string; description: string; semester: string }) => {
+  const handleCreatePortfolio = ({
+    title,
+    description,
+    semester,
+  }: {
+    title: string;
+    description: string;
+    semester: string;
+  }) => {
     const newPortfolio: Portfolio = {
       id: `portfolio-${Date.now()}`,
       title,
@@ -73,7 +81,10 @@ export default function DashboardPage() {
     closeModal("addCourse");
   };
 
-  const openModal = (modalName: keyof typeof modals, data: any = true) => {
+  const openModal = (
+    modalName: keyof typeof modals,
+    data: boolean | Document | PersonalDocument | Course = true
+  ) => {
     setModals((prev) => ({ ...prev, [modalName]: data }));
   };
 
