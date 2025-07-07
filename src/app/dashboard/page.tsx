@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 import { portfoliosData } from "./data";
 import { Course, Document, PersonalDocument, Portfolio } from "./types";
 import { Header } from "./components/Header";
@@ -17,6 +19,21 @@ import { AddCourseModal } from "./components/AddCourseModal";
 // ===================================================================================
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const token = Cookies.get("token");
+    if (!token) {
+      router.push("/auth");
+    } else {
+      // Para mayor seguridad, aquí podrías agregar una verificación
+      // del token contra un endpoint de tu API.
+      // ej: fetch('/api/auth/verify').then(...)
+      setIsAuthenticated(true);
+    }
+  }, [router]);
+
   const [portfolios, setPortfolios] = useState<Portfolio[]>(portfoliosData);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string | null>(
     portfoliosData[0]?.id || null
@@ -91,6 +108,14 @@ export default function DashboardPage() {
   const closeModal = (modalName: keyof typeof modals) => {
     setModals((prev) => ({ ...prev, [modalName]: null }));
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-gray-100 dark:bg-gray-900">
+        <p className="text-gray-500 dark:text-gray-400">Verificando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen flex-col bg-gray-100 dark:bg-gray-900">
