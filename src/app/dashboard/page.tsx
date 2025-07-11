@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-import { portfoliosData } from "./data";
+
 import { Course, Document, PersonalDocument, Portfolio } from "./types";
 import { Header } from "./components/Header";
 import { PortfolioList } from "./components/PortfolioList";
@@ -34,10 +34,39 @@ export default function DashboardPage() {
     }
   }, [router]);
 
-  const [portfolios, setPortfolios] = useState<Portfolio[]>(portfoliosData);
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string | null>(
-    portfoliosData[0]?.id || null
+    null
   );
+
+  useEffect(() => {
+    const token = Cookies.get("token");
+
+    const fetchPortfolios = async () => {
+      try {
+        const response = await fetch("/api/portfolios", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error("Error al obtener los portafolios");
+        }
+        const data = await response.json();
+        setPortfolios(data);
+        if (data.length > 0) {
+          setSelectedPortfolioId(data[0].id);
+        }
+      } catch (error) {
+        console.error(error);
+        // Aquí podrías manejar el error, por ejemplo, mostrando un mensaje al usuario.
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchPortfolios();
+    }
+  }, [isAuthenticated]);
 
   const [modals, setModals] = useState({
     createPortfolio: false,

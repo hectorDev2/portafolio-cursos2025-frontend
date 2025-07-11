@@ -1,7 +1,7 @@
 
 import { Feedback } from "../types";
 
-export const FeedbackList = ({ feedback }: any) => {
+export const FeedbackList = ({ feedback = [] }: any) => {
     return (
       <div className="bg-yellow-50/50 dark:bg-yellow-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800">
         <div className="p-6">
