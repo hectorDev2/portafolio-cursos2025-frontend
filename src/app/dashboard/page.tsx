@@ -79,7 +79,7 @@ export default function DashboardPage() {
     return portfolios.find((p) => p.id === selectedPortfolioId) || null;
   }, [selectedPortfolioId, portfolios]);
 
-  const handleCreatePortfolio = ({
+  const handleCreatePortfolio = async ({
     title,
     description,
     semester,
@@ -88,43 +88,96 @@ export default function DashboardPage() {
     description: string;
     semester: string;
   }) => {
-    const newPortfolio: Portfolio = {
-      id: `portfolio-${Date.now()}`,
-      title,
-      description,
-      semester,
-      generalDocuments: [
-        { id: `doc-${Date.now()}-1`, type: "Carátula" },
-        { id: `doc-${Date.now()}-2`, type: "Carga Lectiva" },
-        { id: `doc-${Date.now()}-3`, type: "Filosofía" },
-      ],
-      courses: [],
-      feedback: [],
-    };
-    setPortfolios((prev) => [newPortfolio, ...prev]);
-    setSelectedPortfolioId(newPortfolio.id);
-    closeModal("createPortfolio");
+    const token = Cookies.get("token");
+    try {
+      const response = await fetch("/api/portfolios", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ title, description, semester }),
+      });
+      if (!response.ok) throw new Error("Error al crear el portafolio");
+      const newPortfolio: Portfolio = await response.json();
+      setPortfolios((prev) => [newPortfolio, ...prev]);
+      setSelectedPortfolioId(newPortfolio.id);
+      closeModal("createPortfolio");
+    } catch (error) {
+      console.error(error);
+      // Aquí podrías mostrar un mensaje de error al usuario
+    }
   };
 
-  const handleAddCourse = ({ name }: { name: string }) => {
+  const handleAddCourse = async ({
+    name,
+    code,
+  }: {
+    name: string;
+    code?: string;
+  }) => {
+    if (!selectedPortfolioId) return;
+    const token = Cookies.get("token");
+    try {
+      const response = await fetch(
+        `/api/portfolios/${selectedPortfolioId}/cursos`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name,
+            code,
+            portfolioId: selectedPortfolioId,
+          }),
+        }
+      );
+      if (!response.ok) throw new Error("Error al agregar el curso");
+      const newCourse: Course = await response.json();
+      console.log("🚀 ~ handleAddCourse ~ newCourse:", newCourse);
+
+      setPortfolios((prevPortfolios) =>
+        prevPortfolios.map((portfolio) =>
+          portfolio.id === selectedPortfolioId
+            ? { ...portfolio, cursos: [...(portfolio.cursos || []), newCourse] }
+            : portfolio
+        )
+      );
+      closeModal("addCourse");
+    } catch (error) {
+      console.error(error);
+      // Aquí podrías mostrar un mensaje de error al usuario
+    }
+  };
+
+  const handleDeletePortfolio = async () => {
     if (!selectedPortfolioId) return;
 
-    const newCourse: Course = {
-      id: `course-${Date.now()}`,
-      name,
-      syllabus: "missing",
-      progress: "missing",
-      record: "missing",
-    };
+    if (
+      window.confirm("¿Estás seguro de que quieres eliminar este portafolio?")
+    ) {
+      const token = Cookies.get("token");
+      try {
+        const response = await fetch(`/api/portfolios/${selectedPortfolioId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-    setPortfolios((prevPortfolios) =>
-      prevPortfolios.map((portfolio) =>
-        portfolio.id === selectedPortfolioId
-          ? { ...portfolio, courses: [...portfolio.courses, newCourse] }
-          : portfolio
-      )
-    );
-    closeModal("addCourse");
+        if (!response.ok) throw new Error("Error al eliminar el portafolio");
+
+        setPortfolios((prev) =>
+          prev.filter((p) => p.id !== selectedPortfolioId)
+        );
+        setSelectedPortfolioId(null);
+      } catch (error) {
+        console.error(error);
+        // Aquí podrías mostrar un mensaje de error al usuario
+      }
+    }
   };
 
   const openModal = (
@@ -173,6 +226,7 @@ export default function DashboardPage() {
                   openModal("courseDetail", course)
                 }
                 onAddCourse={() => openModal("addCourse")}
+                onDeletePortfolio={handleDeletePortfolio}
               />
             ) : (
               <div className="flex h-full items-center justify-center">

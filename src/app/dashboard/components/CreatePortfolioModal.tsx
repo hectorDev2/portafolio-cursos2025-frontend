@@ -33,31 +33,11 @@ export const CreatePortfolioModal = ({
       }
 
       try {
-        const res = await fetch("/api/portfolios", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            title: title.trim(),
-            description: description.trim(),
-            semester: semester.trim(),
-          }),
+        onCreate({
+          title,
+          description,
+          semester,
         });
-
-        if (res.ok) {
-          const newPortfolio = await res.json();
-          onCreate(newPortfolio);
-          onClose();
-        } else {
-          console.error(
-            "Failed to create portfolio:",
-            res.status,
-            res.statusText
-          );
-          // Handle error, maybe show an alert to the user
-        }
       } catch (error) {
         console.error("Error creating portfolio:", error);
         // Handle network error

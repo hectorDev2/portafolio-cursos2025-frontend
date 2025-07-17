@@ -36,9 +36,16 @@ export const CourseList = ({ courses, onCourseClick }: CourseListProps) => {
                 onClick={() => onCourseClick(course)}
                 className="flex w-full flex-col gap-2 rounded-lg border border-gray-200 dark:border-gray-700 p-4 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 sm:flex-row sm:items-center sm:justify-between"
               >
-                <p className="font-semibold text-gray-900 dark:text-white">
-                  {course.name}
-                </p>
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    {course.name}
+                  </p>
+                  {course.code && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {course.code}
+                    </p>
+                  )}
+                </div>
                 <div className="flex items-center gap-4">
                   <StatusIndicator status={course.syllabus} text="Sílabo" />
                   <StatusIndicator status={course.progress} text="Avance" />

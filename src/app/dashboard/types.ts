@@ -12,6 +12,7 @@ export interface Document {
 export interface Course {
   id: string;
   name: string;
+  code?: string;
   syllabus: DocumentStatus;
   progress: DocumentStatus;
   record: DocumentStatus;
@@ -31,7 +32,7 @@ export interface Portfolio {
   description: string;
   semester: string;
   generalDocuments: Document[];
-  courses: Course[];
+  cursos: Course[];
   feedback: Feedback[];
 }
 

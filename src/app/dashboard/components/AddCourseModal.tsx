@@ -1,14 +1,14 @@
-
 import { useState } from "react";
 import { Modal } from "./Modal";
 
 export const AddCourseModal = ({ onClose, onAddCourse }: any) => {
   const [name, setName] = useState("");
+  const [code, setCode] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
-      onAddCourse({ name: name.trim() });
+      onAddCourse({ name: name.trim(), code: code.trim() });
     }
   };
 
@@ -35,6 +35,21 @@ export const AddCourseModal = ({ onClose, onAddCourse }: any) => {
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Ej. Cálculo I"
               autoFocus
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="courseCode"
+              className="text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Código del Curso (Opcional)
+            </label>
+            <input
+              id="courseCode"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              placeholder="Ej. CS101"
             />
           </div>
         </div>
