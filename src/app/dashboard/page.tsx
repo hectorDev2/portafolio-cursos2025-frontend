@@ -39,34 +39,37 @@ export default function DashboardPage() {
     null
   );
 
-  useEffect(() => {
+  const fetchPortfolios = async () => {
     const token = Cookies.get("token");
-
-    const fetchPortfolios = async () => {
-      try {
-        const response = await fetch("/api/portfolios", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok) {
-          throw new Error("Error al obtener los portafolios");
-        }
-        const data = await response.json();
-        setPortfolios(data);
-        if (data.length > 0) {
-          setSelectedPortfolioId(data[0].id);
-        }
-      } catch (error) {
-        console.error(error);
-        // Aquí podrías manejar el error, por ejemplo, mostrando un mensaje al usuario.
+    try {
+      const response = await fetch("/api/portfolios", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Error al obtener los portafolios");
       }
-    };
+      const data = await response.json();
+      setPortfolios(data);
+      if (data.length > 0) {
+        setSelectedPortfolioId(data[0].id);
+      }
+    } catch (error) {
+      console.error(error);
+      // Aquí podrías manejar el error, por ejemplo, mostrando un mensaje al usuario.
+    }
+  };
 
+  useEffect(() => {
     if (isAuthenticated) {
       fetchPortfolios();
     }
   }, [isAuthenticated]);
+
+  const refreshPortfolios = () => {
+    fetchPortfolios();
+  };
 
   const [modals, setModals] = useState({
     createPortfolio: false,
@@ -243,9 +246,6 @@ export default function DashboardPage() {
               onSelectPortfolio={setSelectedPortfolioId}
               onOpenCreateModal={() => openModal("createPortfolio")}
             />
-            <PersonalDocuments
-              onUpload={(doc) => openModal("uploadFile", doc)}
-            />
           </aside>
           <section className="h-full overflow-y-auto p-4 md:p-8">
             {selectedPortfolio ? (
@@ -278,10 +278,12 @@ export default function DashboardPage() {
         />
       )}
 
-      {modals.uploadFile && (
+      {modals.uploadFile && selectedPortfolioId && (
         <UploadFileModal
           document={modals.uploadFile}
           onClose={() => closeModal("uploadFile")}
+          portfolioId={selectedPortfolioId}
+          onUploadSuccess={refreshPortfolios}
         />
       )}
 

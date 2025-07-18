@@ -1,12 +1,12 @@
-
 import { LucideIcon } from "lucide-react";
 
 export type DocumentStatus = "uploaded" | "missing";
 
 export interface Document {
   id: string;
-  type: "Carátula" | "Carga Lectiva" | "Filosofía";
+  type: "caratula" | "cargalectiva" | "filosofia";
   fileName?: string;
+  name?: string;
 }
 
 export interface Course {
@@ -27,7 +27,7 @@ export interface Feedback {
 }
 
 export interface Portfolio {
-  id:string;
+  id: string;
   title: string;
   description: string;
   semester: string;

@@ -33,7 +33,6 @@ export const PortfolioDetail = ({
       alert("No se pudo cargar el PDF");
     }
   };
-  console.log(portfolio, "generalDocuments");
 
   return (
     <div className="space-y-8">
