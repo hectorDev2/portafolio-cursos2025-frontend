@@ -5,12 +5,13 @@ import { Modal } from "./Modal";
 
 export const CourseDetailModal = ({
   course,
-  portfolioId,
   onClose,
+  onDelete,
 }: {
   course: Course;
   portfolioId: string;
   onClose: () => void;
+  onDelete: () => void;
 }) => {
   return (
     <Modal onClose={onClose}>
@@ -59,21 +60,11 @@ export const CourseDetailModal = ({
           onClick={async () => {
             if (confirm("¿Seguro que deseas eliminar este curso?")) {
               try {
-                const res = await fetch(
-                  `/api/portfolios/${portfolioId}/cursos/${course.id}`,
-                  {
-                    method: "DELETE",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                  }
-                );
-                if (res.ok) {
-                  onClose();
-                  // Aquí podrías llamar una función para refrescar la lista de cursos si la tienes
-                } else {
-                  alert("No se pudo eliminar el curso");
-                }
+                await onDelete();
+
+                onClose();
+                // Aquí podrías llamar una función para refrescar la lista de cursos si la tienes
+                alert("Curso eliminado con éxito");
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
               } catch (error) {
                 alert("Error al eliminar el curso");

@@ -180,6 +180,38 @@ export default function DashboardPage() {
     }
   };
 
+  const handleDeleteCourse = async (courseId: string) => {
+    if (!selectedPortfolioId) return;
+    const token = Cookies.get("token");
+    try {
+      const response = await fetch(
+        `/api/portfolios/${selectedPortfolioId}/cursos/${courseId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) throw new Error("Error al eliminar el curso");
+      setPortfolios((prevPortfolios) =>
+        prevPortfolios.map((portfolio) =>
+          portfolio.id === selectedPortfolioId
+            ? {
+                ...portfolio,
+                cursos: portfolio.cursos?.filter(
+                  (course) => course.id !== courseId
+                ),
+              }
+            : portfolio
+        )
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const openModal = (
     modalName: keyof typeof modals,
     data: boolean | Document | PersonalDocument | Course = true
@@ -255,6 +287,8 @@ export default function DashboardPage() {
 
       {modals.courseDetail && (
         <CourseDetailModal
+          onDelete={() => handleDeleteCourse(modals.courseDetail!.id)}
+          portfolioId={selectedPortfolioId!}
           course={modals.courseDetail}
           onClose={() => closeModal("courseDetail")}
         />
