@@ -7,7 +7,6 @@ import Cookies from "js-cookie";
 import { Course, Document, PersonalDocument, Portfolio } from "./types";
 import { Header } from "./components/Header";
 import { PortfolioList } from "./components/PortfolioList";
-import { PersonalDocuments } from "./components/PersonalDocuments";
 import { PortfolioDetail } from "./components/PortfolioDetail";
 import { CreatePortfolioModal } from "./components/CreatePortfolioModal";
 import { UploadFileModal } from "./components/UploadFileModal";

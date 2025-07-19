@@ -4,7 +4,7 @@ export type DocumentStatus = "uploaded" | "missing";
 
 export interface Document {
   id: string;
-  type: "caratula" | "cargalectiva" | "filosofia";
+  type: "caratula" | "cargalectiva" | "filosofia" | "curriculum";
   fileName?: string;
   name?: string;
 }

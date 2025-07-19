@@ -58,7 +58,7 @@ export const PortfolioDetail = ({
 
       <SectionCard title="Documentos Generales">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {["Filosofía", "Carátula", "Carga Lectiva"].map((type) => {
+          {["Filosofía", "Carátula", "Carga Lectiva", "Curriculum"].map((type) => {
             let doc = {};
             if (type === "Carátula" && portfolio.Caratula) {
               doc = { type, ...portfolio.Caratula };
@@ -66,6 +66,8 @@ export const PortfolioDetail = ({
               doc = { type, ...portfolio.Filosofia };
             } else if (type === "Carga Lectiva" && portfolio.CargaLectiva) {
               doc = { type, ...portfolio.CargaLectiva };
+            } else if (type === "Curriculum" && portfolio.Curriculum) {
+              doc = { type, ...portfolio.Curriculum };
             } else {
               doc = { type };
             }
