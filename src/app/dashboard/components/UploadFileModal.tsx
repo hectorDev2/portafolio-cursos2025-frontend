@@ -24,7 +24,8 @@ export const UploadFileModal = ({
     return text
       .toLowerCase() // convierte a minúsculas
       .normalize("NFD") // descompone los acentos
-      .replace(/[\u0300-\u036f]/g, ""); // elimina los acentos
+      .replace(/[\u0300-\u036f]/g, "") // elimina los acentos
+      .replace(/\s+/g, "-"); // Reemplaza espacios con guiones
   };
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -52,6 +53,7 @@ export const UploadFileModal = ({
         if (token) {
           headers["Authorization"] = `Bearer ${token}`;
         }
+        formData.append("portfolioId", portfolioId);
         const response = await fetch(endpoint, {
           method: "POST",
           headers,
@@ -83,7 +85,7 @@ export const UploadFileModal = ({
         setUploading(false);
       }
     },
-    [document, portfolioId, onClose]
+    [document, portfolioId, onClose, onUploadSuccess]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

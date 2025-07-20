@@ -29,6 +29,7 @@ export const PortfolioDetail = ({
       const blob = await response.blob();
       setPdfUrl(URL.createObjectURL(blob));
       setShowIframe(true);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       alert("No se pudo cargar el PDF");
     }
@@ -58,39 +59,45 @@ export const PortfolioDetail = ({
 
       <SectionCard title="Documentos Generales">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {["Filosofía", "Carátula", "Carga Lectiva", "Curriculum"].map((type) => {
-            let doc = {};
-            if (type === "Carátula" && portfolio.Caratula) {
-              doc = { type, ...portfolio.Caratula };
-            } else if (type === "Filosofía" && portfolio.Filosofia) {
-              doc = { type, ...portfolio.Filosofia };
-            } else if (type === "Carga Lectiva" && portfolio.CargaLectiva) {
-              doc = { type, ...portfolio.CargaLectiva };
-            } else if (type === "Curriculum" && portfolio.Curriculum) {
-              doc = { type, ...portfolio.Curriculum };
-            } else {
-              doc = { type };
+          {["Filosofía", "Carátula", "Carga Lectiva", "Curriculum"].map(
+            (type) => {
+              type DocumentType = {
+                type: string;
+                fileName?: string;
+                fileUrl?: string;
+                [key: string]: any;
+              };
+              let doc: DocumentType = { type };
+              if (type === "Carátula" && portfolio.Caratula) {
+                doc = { type, ...portfolio.Caratula };
+              } else if (type === "Filosofía" && portfolio.Filosofia) {
+                doc = { type, ...portfolio.Filosofia };
+              } else if (type === "Carga Lectiva" && portfolio.CargaLectiva) {
+                doc = { type, ...portfolio.CargaLectiva };
+              } else if (type === "Curriculum" && portfolio.Curriculum) {
+                doc = { type, ...portfolio.Curriculum };
+              }
+              return (
+                <div key={type} className="flex flex-col items-center gap-2">
+                  <DocumentCard
+                    document={doc}
+                    onUpload={() => onOpenUploadModal(doc)}
+                  />
+                  {(doc.fileName || doc.fileUrl) && (
+                    <button
+                      className="px-3 py-1 text-xs rounded bg-blue-600 text-white hover:bg-blue-700"
+                      onClick={() => {
+                        const url = `api/${doc.fileUrl}`;
+                        handleViewPdf(url);
+                      }}
+                    >
+                      Ver PDF
+                    </button>
+                  )}
+                </div>
+              );
             }
-            return (
-              <div key={type} className="flex flex-col items-center gap-2">
-                <DocumentCard
-                  document={doc}
-                  onUpload={() => onOpenUploadModal(doc)}
-                />
-                {(doc.fileName || doc.fileUrl) && (
-                  <button
-                    className="px-3 py-1 text-xs rounded bg-blue-600 text-white hover:bg-blue-700"
-                    onClick={() => {
-                      const url = `api/${doc.fileUrl}`;
-                      handleViewPdf(url);
-                    }}
-                  >
-                    Ver PDF
-                  </button>
-                )}
-              </div>
-            );
-          })}
+          )}
         </div>
         {showIframe && pdfUrl && (
           <div className="mt-6 w-full flex flex-col items-center">
