@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Modal } from "./Modal";
 
-export const AddCourseModal = ({ onClose, onAddCourse }: any) => {
+export const AddCourseModal = ({ onClose, onAddCourse, portfolioId }: any) => {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
-      onAddCourse({ name: name.trim(), code: code.trim() });
+      onAddCourse({ name: name.trim(), code: code.trim(), portfolioId }); // Assuming portfolioId is handled elsewhere
     }
   };
 
