@@ -114,28 +114,27 @@ export default function DashboardPage() {
   const handleAddCourse = async ({
     name,
     code,
+    portfolioId,
   }: {
     name: string;
     code?: string;
+    portfolioId: string;
   }) => {
-    if (!selectedPortfolioId) return;
+    if (!portfolioId) return;
     const token = Cookies.get("token");
     try {
-      const response = await fetch(
-        `/api/portfolios/${selectedPortfolioId}/cursos`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            name,
-            code,
-            portfolioId: selectedPortfolioId,
-          }),
-        }
-      );
+      const response = await fetch(`/api/cursos`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name,
+          code,
+          portfolioId: selectedPortfolioId,
+        }),
+      });
       if (!response.ok) throw new Error("Error al agregar el curso");
       const newCourse: Course = await response.json();
       console.log("🚀 ~ handleAddCourse ~ newCourse:", newCourse);
@@ -186,16 +185,13 @@ export default function DashboardPage() {
     if (!selectedPortfolioId) return;
     const token = Cookies.get("token");
     try {
-      const response = await fetch(
-        `/api/portfolios/${selectedPortfolioId}/cursos/${courseId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`/api/cursos/${courseId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!response.ok) throw new Error("Error al eliminar el curso");
       setPortfolios((prevPortfolios) =>
         prevPortfolios.map((portfolio) =>
@@ -292,6 +288,7 @@ export default function DashboardPage() {
           portfolioId={selectedPortfolioId!}
           course={modals.courseDetail}
           onClose={() => closeModal("courseDetail")}
+          onUploadSuccess={refreshPortfolios}
         />
       )}
 
@@ -299,6 +296,7 @@ export default function DashboardPage() {
         <AddCourseModal
           onClose={() => closeModal("addCourse")}
           onAddCourse={handleAddCourse}
+          portfolioId={selectedPortfolioId!}
         />
       )}
     </div>

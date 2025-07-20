@@ -16,6 +16,7 @@ export interface Course {
   syllabus: DocumentStatus;
   progress: DocumentStatus;
   record: DocumentStatus;
+  attendance: DocumentStatus;
 }
 
 export interface Feedback {
