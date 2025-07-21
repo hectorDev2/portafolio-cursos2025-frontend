@@ -27,7 +27,7 @@ export const CourseDetailModal = ({
   } | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showIframe, setShowIframe] = useState(false);
-  const [courseData, setCourseData] = useState<unknown | null>(null);
+  const [courseData, setCourseData] = useState<Course | null>(null);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -122,51 +122,6 @@ export const CourseDetailModal = ({
                 }
               : undefined
           }
-          viewButton={
-            courseData?.silabo && (
-              <button
-                className="px-3 py-1.5 text-sm rounded-md flex items-center gap-2 transition-colors bg-transparent border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={async () => {
-                  try {
-                    const response = await fetch(
-                      `/api/${courseData.silabo.fileUrl}`,
-                      {
-                        credentials: "include",
-                        headers: {
-                          Authorization: `Bearer ${Cookies.get("token")}`,
-                        },
-                      }
-                    );
-                    if (!response.ok)
-                      throw new Error("Error al obtener el PDF");
-                    const blob = await response.blob();
-                    const pdfBlobUrl = URL.createObjectURL(blob);
-                    window.open(pdfBlobUrl, "_blank");
-                  } catch (error) {
-                    alert("No se pudo cargar el PDF");
-                  }
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-eye h-4 w-4"
-                  aria-hidden="true"
-                >
-                  <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                Ver
-              </button>
-            )
-          }
         />
         <DocumentRow
           name="Avance Curricular"
@@ -197,50 +152,6 @@ export const CourseDetailModal = ({
                   }
                 }
               : undefined
-          }
-          viewButton={
-            courseData?.avanceCurso && (
-              <button
-                className="px-3 py-1.5 text-sm rounded-md flex items-center gap-2 transition-colors bg-transparent border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={async () => {
-                  try {
-                    const response = await fetch(
-                      `/api/${courseData.avanceCurso.fileUrl}`,
-                      {
-                        credentials: "include",
-                        headers: {
-                          Authorization: `Bearer ${Cookies.get("token")}`,
-                        },
-                      }
-                    );
-                    if (!response.ok) throw new Error("Archivo no encontrado");
-                    const blob = await response.blob();
-                    const pdfBlobUrl = URL.createObjectURL(blob);
-                    window.open(pdfBlobUrl, "_blank");
-                  } catch (error) {
-                    alert("No se pudo cargar el PDF");
-                  }
-                }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-eye h-4 w-4"
-                  aria-hidden="true"
-                >
-                  <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path>
-                  <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-                Ver
-              </button>
-            )
           }
         />
       </div>

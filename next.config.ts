@@ -6,8 +6,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination:
-          "https://portafolio-cursos2025-backend-production.up.railway.app/:path*", // Cambia el puerto si tu backend usa otro
+        destination: "http://localhost:3001/:path*", // Cambia el puerto si tu backend usa otro
       },
     ];
   },
