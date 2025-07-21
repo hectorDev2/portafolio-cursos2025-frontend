@@ -1,7 +1,21 @@
 import { useState } from "react";
 import { Modal } from "./Modal";
 
-export const AddCourseModal = ({ onClose, onAddCourse, portfolioId }: any) => {
+interface AddCourseModalProps {
+  onClose: () => void;
+  onAddCourse: (course: {
+    name: string;
+    code: string;
+    portfolioId: string;
+  }) => void;
+  portfolioId: string;
+}
+
+export const AddCourseModal = ({
+  onClose,
+  onAddCourse,
+  portfolioId,
+}: AddCourseModalProps) => {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
 

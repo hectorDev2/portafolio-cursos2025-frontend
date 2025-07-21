@@ -2,7 +2,7 @@ import { Course } from "../types";
 import { StatusIndicator } from "./StatusIndicator";
 
 interface CourseListProps {
-  courses: Course[];
+  courses: Course[] | unknown;
   onCourseClick: (course: Course) => void;
 }
 

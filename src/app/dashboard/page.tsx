@@ -238,7 +238,7 @@ export default function DashboardPage() {
             <PortfolioList
               portfolios={portfolios}
               selectedPortfolioId={selectedPortfolioId}
-              onSelectPortfolio={setSelectedPortfolioId}
+              onSelectPortfolio={(id) => setSelectedPortfolioId(id?.toString())}
               onOpenCreateModal={() => openModal("createPortfolio")}
             />
           </aside>

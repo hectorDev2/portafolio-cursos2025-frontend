@@ -389,7 +389,7 @@ const SupportPage = () => {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as typeof activeTab)}
                   className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
                     activeTab === tab.id
                       ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"

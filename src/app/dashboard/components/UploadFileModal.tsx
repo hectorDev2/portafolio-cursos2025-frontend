@@ -45,7 +45,11 @@ export const UploadFileModal = ({
       console.log(document, "UploadFileModal document");
 
       try {
-        docType = cleanText(document.type);
+        if ("type" in document && typeof document.type === "string") {
+          docType = cleanText(document.type);
+        } else {
+          docType = "personal-document"; // fallback or handle as needed
+        }
         console.log("🚀 ~ docType:", docType);
         endpoint = `/api/portfolios/${portfolioId}/${docType}`;
         const token = Cookies.get("token");
@@ -80,8 +84,12 @@ export const UploadFileModal = ({
             return prev + 10;
           });
         }, 100);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Error al subir el archivo");
+        }
         setUploading(false);
       }
     },

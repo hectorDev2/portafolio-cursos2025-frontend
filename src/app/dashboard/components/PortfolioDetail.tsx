@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import Cookies from "js-cookie";
 import { CourseList } from "./CourseList";
@@ -6,6 +5,7 @@ import { DocumentCard } from "./DocumentCard";
 import { FeedbackList } from "./FeedbackList";
 import { SectionCard } from "./SectionCard";
 import { Plus, Trash2 } from "lucide-react";
+import { Course, Feedback } from "../types";
 
 export const PortfolioDetail = ({
   portfolio,
@@ -13,7 +13,23 @@ export const PortfolioDetail = ({
   onOpenCourseDetailModal,
   onAddCourse,
   onDeletePortfolio,
-}: any) => {
+}: {
+  portfolio: {
+    title: string;
+    description: string;
+    semester: string;
+    Caratula?: { type: string; fileName?: string; fileUrl?: string };
+    Filosofia?: { type: string; fileName?: string; fileUrl?: string };
+    CargaLectiva?: { type: string; fileName?: string; fileUrl?: string };
+    Curriculum?: { type: string; fileName?: string; fileUrl?: string };
+    cursos: Course[];
+    feedback: Feedback[];
+  };
+  onOpenUploadModal: (doc: Document) => void;
+  onOpenCourseDetailModal: (course: Course) => void;
+  onAddCourse: () => void;
+  onDeletePortfolio: () => void;
+}) => {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showIframe, setShowIframe] = useState(false);
 
@@ -65,17 +81,17 @@ export const PortfolioDetail = ({
                 type: string;
                 fileName?: string;
                 fileUrl?: string;
-                [key: string]: any;
+                [key: string]: unknown;
               };
               let doc: DocumentType = { type };
               if (type === "Carátula" && portfolio.Caratula) {
-                doc = { type, ...portfolio.Caratula };
+                doc = { ...portfolio.Caratula, type };
               } else if (type === "Filosofía" && portfolio.Filosofia) {
-                doc = { type, ...portfolio.Filosofia };
+                doc = { ...portfolio.Filosofia, type };
               } else if (type === "Carga Lectiva" && portfolio.CargaLectiva) {
-                doc = { type, ...portfolio.CargaLectiva };
+                doc = { ...portfolio.CargaLectiva, type };
               } else if (type === "Curriculum" && portfolio.Curriculum) {
-                doc = { type, ...portfolio.Curriculum };
+                doc = { ...portfolio.Curriculum, type };
               }
               return (
                 <div key={type} className="flex flex-col items-center gap-2">

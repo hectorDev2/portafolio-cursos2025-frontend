@@ -3,11 +3,11 @@ import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import Cookies from "js-cookie";
 import { Modal } from "./Modal";
+import Error from "next/error";
 
 export const UploadCourseFileModal = ({
   document,
   onClose,
-  portfolioId,
   courseId,
   onUploadSuccess,
 }: {
@@ -79,12 +79,16 @@ export const UploadCourseFileModal = ({
             return prev + 10;
           });
         }, 100);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(
+          typeof err === "object" && err !== null && "message" in err
+            ? (err as { message: string }).message
+            : String(err)
+        );
         setUploading(false);
       }
     },
-    [document, portfolioId, courseId, onClose, onUploadSuccess]
+    [document, courseId, onClose, onUploadSuccess]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

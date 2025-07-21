@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BarChart2, FileText } from "lucide-react";
 import { Course } from "../types";
 import { DocumentRow } from "./DocumentRow";
@@ -28,7 +27,7 @@ export const CourseDetailModal = ({
   } | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showIframe, setShowIframe] = useState(false);
-  const [courseData, setCourseData] = useState<any | null>(null);
+  const [courseData, setCourseData] = useState<unknown | null>(null);
 
   useEffect(() => {
     const fetchCourse = async () => {

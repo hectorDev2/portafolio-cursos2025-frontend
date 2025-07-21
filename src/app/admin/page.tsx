@@ -22,15 +22,9 @@ import {
   Trash2,
   Eye,
   Shield,
-  GraduationCap,
-  Building,
   Award,
   Activity,
-  PieChart,
-  Target,
   Zap,
-  Globe,
-  Database,
   Server,
   HardDrive,
 } from "lucide-react";
@@ -72,7 +66,6 @@ const AdminDashboardPage = () => {
   >("overview");
   const [showUserModal, setShowUserModal] = useState(false);
   const [showSemesterModal, setShowSemesterModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   // Mock data
   const stats = {
@@ -247,6 +240,15 @@ const AdminDashboardPage = () => {
     }
   };
 
+  interface StatCardProps {
+    title: string;
+    value: number | string;
+    icon: React.ElementType;
+    trend?: "up" | "down";
+    trendValue?: string;
+    color: string;
+  }
+
   const StatCard = ({
     title,
     value,
@@ -254,7 +256,7 @@ const AdminDashboardPage = () => {
     trend,
     trendValue,
     color,
-  }: any) => (
+  }: StatCardProps) => (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between">
         <div>
@@ -333,23 +335,33 @@ const AdminDashboardPage = () => {
                 icon: BookOpen,
               },
               { id: "semesters", name: "Gestión de Semestres", icon: Calendar },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
-                    activeTab === tab.id
-                      ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                  }`}
-                >
-                  <Icon className="w-5 h-5 mr-2" />
-                  {tab.name}
-                </button>
-              );
-            })}
+            ].map(
+              (tab: { id: string; name: string; icon: React.ElementType }) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() =>
+                      setActiveTab(
+                        tab.id as
+                          | "overview"
+                          | "users"
+                          | "portfolios"
+                          | "semesters"
+                      )
+                    }
+                    className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
+                      activeTab === tab.id
+                        ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
+                        : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <Icon className="w-5 h-5 mr-2" />
+                    {tab.name}
+                  </button>
+                );
+              }
+            )}
           </nav>
         </div>
 
