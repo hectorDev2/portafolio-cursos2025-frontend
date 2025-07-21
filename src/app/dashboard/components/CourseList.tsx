@@ -2,7 +2,7 @@ import { Course } from "../types";
 import { StatusIndicator } from "./StatusIndicator";
 
 interface CourseListProps {
-  courses: Course[] | unknown;
+  courses: Course[];
   onCourseClick: (course: Course) => void;
 }
 
@@ -47,9 +47,14 @@ export const CourseList = ({ courses, onCourseClick }: CourseListProps) => {
                   )}
                 </div>
                 <div className="flex items-center gap-4">
-                  <StatusIndicator status={course.syllabus} text="Sílabo" />
-                  <StatusIndicator status={course.progress} text="Avance" />
-                  <StatusIndicator status={course.record} text="Registro" />
+                  <StatusIndicator
+                    status={course.silabo.fileUrl ? "uploaded" : "missing"}
+                    text="Sílabo"
+                  />
+                  <StatusIndicator
+                    status={course.avanceCurso.fileUrl ? "uploaded" : "missing"}
+                    text="Avance"
+                  />
                 </div>
               </button>
             ))
