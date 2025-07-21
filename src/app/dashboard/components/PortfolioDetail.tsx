@@ -45,7 +45,6 @@ export const PortfolioDetail = ({
       const blob = await response.blob();
       setPdfUrl(URL.createObjectURL(blob));
       setShowIframe(true);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       alert("No se pudo cargar el PDF");
     }

@@ -75,7 +75,6 @@ export default function LoginPage({
           type: "error",
         });
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setAlert({
         message: "No se pudo conectar con el servidor.",
