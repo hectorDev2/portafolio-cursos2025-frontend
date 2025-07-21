@@ -212,7 +212,7 @@ export default function DashboardPage() {
 
   const openModal = (
     modalName: keyof typeof modals,
-    data: boolean | Document | PersonalDocument | Course = true
+    data: boolean | Document | PersonalDocument | DocumentType | Course = true
   ) => {
     setModals((prev) => ({ ...prev, [modalName]: data }));
   };
@@ -246,7 +246,7 @@ export default function DashboardPage() {
             {selectedPortfolio ? (
               <PortfolioDetail
                 portfolio={selectedPortfolio}
-                onOpenUploadModal={(doc: Document) =>
+                onOpenUploadModal={(doc: Document | PersonalDocument) =>
                   openModal("uploadFile", doc)
                 }
                 onOpenCourseDetailModal={(course: Course) =>
@@ -275,7 +275,7 @@ export default function DashboardPage() {
 
       {modals.uploadFile && selectedPortfolioId && (
         <UploadFileModal
-          document={modals.uploadFile}
+          document={modals.uploadFile as Document | PersonalDocument}
           onClose={() => closeModal("uploadFile")}
           portfolioId={selectedPortfolioId}
           onUploadSuccess={refreshPortfolios}

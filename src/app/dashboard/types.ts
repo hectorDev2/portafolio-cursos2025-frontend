@@ -31,7 +31,6 @@ export interface Portfolio {
   title: string;
   description: string;
   semester: string;
-  generalDocuments: Document[];
   cursos: Course[];
   feedback: Feedback[];
 }

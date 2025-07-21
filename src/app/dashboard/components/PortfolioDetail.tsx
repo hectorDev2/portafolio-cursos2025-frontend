@@ -5,7 +5,7 @@ import { DocumentCard } from "./DocumentCard";
 import { FeedbackList } from "./FeedbackList";
 import { SectionCard } from "./SectionCard";
 import { Plus, Trash2 } from "lucide-react";
-import { Course, Feedback } from "../types";
+import { Course, Feedback, PersonalDocument } from "../types";
 
 interface DocumentType {
   type: string;
@@ -31,7 +31,7 @@ export const PortfolioDetail = ({
     cursos: Course[];
     feedback: Feedback[];
   };
-  onOpenUploadModal: (doc: DocumentType) => void;
+  onOpenUploadModal: (doc: any) => void;
   onOpenCourseDetailModal: (course: Course) => void;
   onAddCourse: () => void;
   onDeletePortfolio: () => void;
