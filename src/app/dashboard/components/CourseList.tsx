@@ -48,11 +48,13 @@ export const CourseList = ({ courses, onCourseClick }: CourseListProps) => {
                 </div>
                 <div className="flex items-center gap-4">
                   <StatusIndicator
-                    status={course.silabo.fileUrl ? "uploaded" : "missing"}
+                    status={course?.silabo?.fileUrl ? "uploaded" : "missing"}
                     text="Sílabo"
                   />
                   <StatusIndicator
-                    status={course.avanceCurso.fileUrl ? "uploaded" : "missing"}
+                    status={
+                      course?.avanceCurso?.fileUrl ? "uploaded" : "missing"
+                    }
                     text="Avance"
                   />
                 </div>

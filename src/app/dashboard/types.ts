@@ -37,7 +37,12 @@ export interface Portfolio {
 
 export interface PersonalDocument {
   id: string;
-  name: "Mi Currículum" | "Avances de Curso";
+  name:
+    | "Mi Currículum"
+    | "Avances de Curso"
+    | "Carátula"
+    | "Carga Lectiva"
+    | "Filosofía";
   icon: LucideIcon;
   action: "Upload" | "View";
 }

@@ -23,9 +23,16 @@ interface DecodedToken {
 export const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+    
     const fetchUserData = async () => {
       const token = Cookies.get("token");
       if (!token) {
@@ -50,7 +57,7 @@ export const Header = () => {
     };
 
     fetchUserData();
-  }, [router]);
+  }, [router, isClient]);
 
   const handleLogout = () => {
     // Elimina la cookie del token
