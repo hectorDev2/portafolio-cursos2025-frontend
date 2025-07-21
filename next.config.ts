@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
       {
         source: "/api/:path*",
         destination:
-          "https://portafolio-cursos2025-backend-production.up.railway.app/api/:path*",
+          "https://portafolio-cursos2025-backend-production.up.railway.app/:path*",
       },
     ];
   },
