@@ -1,7 +1,7 @@
 import { Feedback } from "../types";
 
 interface FeedbackListProps {
-  feedback?: Feedback[] | unknown;
+  feedback?: Feedback[];
 }
 
 export const FeedbackList = ({ feedback = [] }: FeedbackListProps) => {
