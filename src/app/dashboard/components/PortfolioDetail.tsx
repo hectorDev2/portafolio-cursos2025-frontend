@@ -7,6 +7,12 @@ import { SectionCard } from "./SectionCard";
 import { Plus, Trash2 } from "lucide-react";
 import { Course, Feedback } from "../types";
 
+interface DocumentType {
+  type: string;
+  fileName?: string;
+  fileUrl?: string;
+  [key: string]: unknown;
+}
 export const PortfolioDetail = ({
   portfolio,
   onOpenUploadModal,
@@ -25,7 +31,7 @@ export const PortfolioDetail = ({
     cursos: Course[];
     feedback: Feedback[];
   };
-  onOpenUploadModal: (doc: Document) => void;
+  onOpenUploadModal: (doc: DocumentType) => void;
   onOpenCourseDetailModal: (course: Course) => void;
   onAddCourse: () => void;
   onDeletePortfolio: () => void;
