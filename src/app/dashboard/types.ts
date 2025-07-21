@@ -7,16 +7,15 @@ export interface Document {
   type: "caratula" | "cargalectiva" | "filosofia" | "curriculum";
   fileName?: string;
   name?: string;
+  fileUrl?: string;
 }
 
 export interface Course {
   id: string;
   name: string;
   code?: string;
-  syllabus: DocumentStatus;
-  progress: DocumentStatus;
-  record: DocumentStatus;
-  attendance: DocumentStatus;
+  silabo: Document;
+  avanceCurso: Document;
 }
 
 export interface Feedback {

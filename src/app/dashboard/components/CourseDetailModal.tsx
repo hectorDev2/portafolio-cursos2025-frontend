@@ -57,23 +57,6 @@ export const CourseDetailModal = ({
     setDocumentToUpload(null);
   };
 
-  const handleViewPdf = async (url: string) => {
-    try {
-      const response = await fetch(url, {
-        credentials: "include",
-        headers: {
-          Authorization: `Bearer ${Cookies.get("token")}`,
-        },
-      });
-      if (!response.ok) throw new Error("Error al obtener el PDF");
-      const blob = await response.blob();
-      setPdfUrl(URL.createObjectURL(blob));
-      setShowIframe(true);
-    } catch (error) {
-      alert("No se pudo cargar el PDF");
-    }
-  };
-
   return (
     <Modal onClose={onClose}>
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
