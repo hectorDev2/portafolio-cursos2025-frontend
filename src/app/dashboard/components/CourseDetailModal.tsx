@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { BarChart2, FileText } from "lucide-react";
 import { Course } from "../types";
 import { DocumentRow } from "./DocumentRow";
