@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 
 // Simple Alert Component
-const Alert = ({
+export const Alert = ({
   message,
   type,
 }: {

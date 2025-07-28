@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Users,
   BookOpen,
@@ -8,7 +8,6 @@ import {
   TrendingUp,
   TrendingDown,
   UserCheck,
-  UserX,
   FileText,
   CheckCircle,
   AlertCircle,
@@ -19,7 +18,6 @@ import {
   Download,
   Plus,
   Edit,
-  Trash2,
   Eye,
   Shield,
   Award,
@@ -28,16 +26,16 @@ import {
   Server,
   HardDrive,
 } from "lucide-react";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: "teacher" | "admin" | "evaluator";
-  status: "active" | "inactive" | "pending";
-  lastLogin: string;
-  portfolios: number;
-}
+import StatCard from "./components/StatCard";
+import {
+  getRoleColor,
+  getStatusColor,
+  getStatusIcon,
+} from "./components/StatusHelpers";
+import UserModal from "./components/UserModal";
+import SemesterModal from "./components/SemesterModal";
+import Cookies from "js-cookie";
+import { useIsAuthenticated } from "../dashboard/hooks/useIsAuthenticated";
 
 interface Portfolio {
   id: string;
@@ -66,6 +64,8 @@ const AdminDashboardPage = () => {
   >("overview");
   const [showUserModal, setShowUserModal] = useState(false);
   const [showSemesterModal, setShowSemesterModal] = useState(false);
+  const [users, setUsers] = useState<any[]>([]);
+  const { isAuthenticated } = useIsAuthenticated();
 
   // Mock data
   const stats = {
@@ -78,45 +78,6 @@ const AdminDashboardPage = () => {
     systemUptime: "99.9%",
     storageUsed: "2.3 TB",
   };
-
-  const users: User[] = [
-    {
-      id: "1",
-      name: "Dr. María González",
-      email: "maria.gonzalez@universidad.edu",
-      role: "teacher",
-      status: "active",
-      lastLogin: "2024-01-15 14:30",
-      portfolios: 3,
-    },
-    {
-      id: "2",
-      name: "Prof. Carlos Mendoza",
-      email: "carlos.mendoza@universidad.edu",
-      role: "evaluator",
-      status: "active",
-      lastLogin: "2024-01-15 09:15",
-      portfolios: 0,
-    },
-    {
-      id: "3",
-      name: "Dra. Ana Rodríguez",
-      email: "ana.rodriguez@universidad.edu",
-      role: "teacher",
-      status: "inactive",
-      lastLogin: "2024-01-10 16:45",
-      portfolios: 2,
-    },
-    {
-      id: "4",
-      name: "Admin Sistema",
-      email: "admin@universidad.edu",
-      role: "admin",
-      status: "active",
-      lastLogin: "2024-01-15 15:00",
-      portfolios: 0,
-    },
-  ];
 
   const portfolios: Portfolio[] = [
     {
@@ -181,114 +142,27 @@ const AdminDashboardPage = () => {
     },
   ];
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case "admin":
-        return "text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900";
-      case "teacher":
-        return "text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900";
-      case "evaluator":
-        return "text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900";
-      default:
-        return "text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-900";
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "text-green-600 dark:text-green-400";
-      case "inactive":
-        return "text-red-600 dark:text-red-400";
-      case "pending":
-        return "text-orange-600 dark:text-orange-400";
-      case "complete":
-        return "text-green-600 dark:text-green-400";
-      case "incomplete":
-        return "text-orange-600 dark:text-orange-400";
-      case "review":
-        return "text-blue-600 dark:text-blue-400";
-      case "upcoming":
-        return "text-blue-600 dark:text-blue-400";
-      case "completed":
-        return "text-gray-600 dark:text-gray-400";
-      default:
-        return "text-gray-600 dark:text-gray-400";
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "active":
-        return <CheckCircle className="w-4 h-4" />;
-      case "inactive":
-        return <UserX className="w-4 h-4" />;
-      case "pending":
-        return <Clock className="w-4 h-4" />;
-      case "complete":
-        return <CheckCircle className="w-4 h-4" />;
-      case "incomplete":
-        return <AlertCircle className="w-4 h-4" />;
-      case "review":
-        return <Eye className="w-4 h-4" />;
-      case "upcoming":
-        return <Calendar className="w-4 h-4" />;
-      case "completed":
-        return <Award className="w-4 h-4" />;
-      default:
-        return <AlertCircle className="w-4 h-4" />;
-    }
-  };
-
-  interface StatCardProps {
-    title: string;
-    value: number | string;
-    icon: React.ElementType;
-    trend?: "up" | "down";
-    trendValue?: string;
-    color: string;
-  }
-
-  const StatCard = ({
-    title,
-    value,
-    icon: Icon,
-    trend,
-    trendValue,
-    color,
-  }: StatCardProps) => (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-            {title}
-          </p>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {value}
-          </p>
-          {trend && (
-            <div
-              className={`flex items-center mt-2 ${trend === "up" ? "text-green-600" : "text-red-600"}`}
-            >
-              {trend === "up" ? (
-                <TrendingUp className="w-4 h-4 mr-1" />
-              ) : (
-                <TrendingDown className="w-4 h-4 mr-1" />
-              )}
-              <span className="text-sm font-medium">{trendValue}</span>
-            </div>
-          )}
-        </div>
-        <div
-          className={`w-12 h-12 rounded-lg flex items-center justify-center ${color}`}
-        >
-          <Icon className="w-6 h-6 text-white" />
-        </div>
-      </div>
-    </div>
-  );
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token = Cookies.get("token");
+        const response = await fetch("/api/user/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) throw new Error("Error al obtener usuarios");
+        const data = await response.json();
+        setUsers(data);
+      } catch (error) {
+        // Puedes mostrar un mensaje de error aquí si lo deseas
+      }
+    };
+    fetchUsers();
+  }, []);
 
   return (
+    // ...existing code...
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
@@ -612,15 +486,13 @@ const AdminDashboardPage = () => {
                           <div className="flex items-center">
                             <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                               <span className="text-white font-medium text-sm">
-                                {user.name
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")}
+                                {user.name?.charAt(0)}
+                                {user.lastName?.charAt(0)}
                               </span>
                             </div>
                             <div className="ml-4">
                               <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                {user.name}
+                                {user.name} {user.lastName}
                               </div>
                               <div className="text-sm text-gray-500 dark:text-gray-400">
                                 {user.email}
@@ -632,44 +504,36 @@ const AdminDashboardPage = () => {
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}
                           >
-                            {user.role === "admin"
+                            {user.role === "ADMINISTRADOR"
                               ? "Administrador"
-                              : user.role === "teacher"
+                              : user.role === "DOCENTE"
                                 ? "Docente"
-                                : "Evaluador"}
+                                : user.role === "EVALUADOR"
+                                  ? "Evaluador"
+                                  : user.role}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div
-                            className={`flex items-center ${getStatusColor(user.status)}`}
+                            className={`flex items-center text-green-600 dark:text-green-400`}
                           >
-                            {getStatusIcon(user.status)}
                             <span className="ml-2 text-sm font-medium">
-                              {user.status === "active"
-                                ? "Activo"
-                                : user.status === "inactive"
-                                  ? "Inactivo"
-                                  : "Pendiente"}
+                              Activo
                             </span>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                          {user.lastLogin}
+                          {user.createdAt
+                            ? new Date(user.createdAt).toLocaleDateString()
+                            : "-"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                          {user.portfolios}
+                          {/* Aquí podrías mostrar la cantidad de portafolios si tu API lo provee */}
+                          -
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            {/* Acciones aquí */}
                           </div>
                         </td>
                       </tr>
@@ -887,120 +751,13 @@ const AdminDashboardPage = () => {
       </div>
 
       {/* User Modal */}
-      {showUserModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Crear Nuevo Usuario
-              </h3>
-              <form className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Nombre Completo
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="Ej: Dr. Juan Pérez"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Correo Electrónico
-                  </label>
-                  <input
-                    type="email"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="juan.perez@universidad.edu"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Rol
-                  </label>
-                  <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                    <option value="teacher">Docente</option>
-                    <option value="evaluator">Evaluador</option>
-                    <option value="admin">Administrador</option>
-                  </select>
-                </div>
-              </form>
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={() => setShowUserModal(false)}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => setShowUserModal(false)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Crear Usuario
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <UserModal show={showUserModal} onClose={() => setShowUserModal(false)} />
 
       {/* Semester Modal */}
-      {showSemesterModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Crear Nuevo Semestre
-              </h3>
-              <form className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Nombre del Semestre
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="Ej: 2024-II"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Fecha de Inicio
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Fecha de Fin
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-              </form>
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={() => setShowSemesterModal(false)}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => setShowSemesterModal(false)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Crear Semestre
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <SemesterModal
+        show={showSemesterModal}
+        onClose={() => setShowSemesterModal(false)}
+      />
     </div>
   );
 };
