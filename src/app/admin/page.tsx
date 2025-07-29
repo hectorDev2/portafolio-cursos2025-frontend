@@ -217,7 +217,14 @@ const AdminDashboardPage = () => {
 
   // Exportar lista de usuarios filtrados y ordenados a CSV
   const exportUsersCSV = () => {
-    const headers = ["Nombre", "Apellido", "Correo", "Rol", "Estado", "Fecha de Creación"];
+    const headers = [
+      "Nombre",
+      "Apellido",
+      "Correo",
+      "Rol",
+      "Estado",
+      "Fecha de Creación",
+    ];
     const rows = sortedUsers.map((user) => [
       user.name,
       user.lastName,
