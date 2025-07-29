@@ -5,12 +5,9 @@ import {
   BookOpen,
   Calendar,
   BarChart3,
-  TrendingUp,
-  TrendingDown,
   UserCheck,
   FileText,
   CheckCircle,
-  AlertCircle,
   Clock,
   Settings,
   Search,
@@ -20,11 +17,11 @@ import {
   Edit,
   Eye,
   Shield,
-  Award,
   Activity,
   Zap,
   Server,
   HardDrive,
+  Trash2,
 } from "lucide-react";
 import StatCard from "./components/StatCard";
 import {
@@ -34,6 +31,7 @@ import {
 } from "./components/StatusHelpers";
 import UserModal from "./components/UserModal";
 import SemesterModal from "./components/SemesterModal";
+import ConfirmAlert from "./components/ConfirmAlert";
 import Cookies from "js-cookie";
 import { useIsAuthenticated } from "../dashboard/hooks/useIsAuthenticated";
 
@@ -52,6 +50,7 @@ interface Semester {
   id: string;
   name: string;
   startDate: string;
+
   endDate: string;
   status: "active" | "upcoming" | "completed";
   portfolios: number;
@@ -65,7 +64,12 @@ const AdminDashboardPage = () => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showSemesterModal, setShowSemesterModal] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"role" | "createdAt" | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const { isAuthenticated } = useIsAuthenticated();
+  const [showConfirmAlert, setShowConfirmAlert] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
   // Mock data
   const stats = {
@@ -142,25 +146,99 @@ const AdminDashboardPage = () => {
     },
   ];
 
+  const fetchUsers = async () => {
+    try {
+      const token = Cookies.get("token");
+      const response = await fetch("/api/user/", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Error al obtener usuarios");
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      // Puedes mostrar un mensaje de error aquí si lo deseas
+    }
+  };
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const token = Cookies.get("token");
-        const response = await fetch("/api/user/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok) throw new Error("Error al obtener usuarios");
-        const data = await response.json();
-        setUsers(data);
-      } catch (error) {
-        // Puedes mostrar un mensaje de error aquí si lo deseas
-      }
-    };
     fetchUsers();
   }, []);
 
+  // Filtrar y ordenar usuarios
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const sortedUsers = [...filteredUsers];
+  if (sortBy) {
+    sortedUsers.sort((a, b) => {
+      if (sortBy === "role") {
+        if (a.role < b.role) return sortOrder === "asc" ? -1 : 1;
+        if (a.role > b.role) return sortOrder === "asc" ? 1 : -1;
+        return 0;
+      }
+      if (sortBy === "createdAt") {
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+      }
+      return 0;
+    });
+  }
+
+  const handleDeleteUser = (userId: string) => {
+    setUserToDelete(userId);
+    setShowConfirmAlert(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    try {
+      const token = Cookies.get("token");
+      const response = await fetch(`/api/user/${userToDelete}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        setUsers(users.filter((user) => user.id !== userToDelete));
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    } finally {
+      setShowConfirmAlert(false);
+      setUserToDelete(null);
+    }
+  };
+
+  // Exportar lista de usuarios filtrados y ordenados a CSV
+  const exportUsersCSV = () => {
+    const headers = ["Nombre", "Apellido", "Correo", "Rol", "Estado", "Fecha de Creación"];
+    const rows = sortedUsers.map((user) => [
+      user.name,
+      user.lastName,
+      user.email,
+      user.role,
+      "Activo", // Puedes ajustar según tu lógica de estado
+      user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-",
+    ]);
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += headers.join(",") + "\n";
+    rows.forEach((row) => {
+      csvContent += row.map((cell) => `"${cell ?? ""}"`).join(",") + "\n";
+    });
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "usuarios.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   return (
     // ...existing code...
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -434,12 +512,36 @@ const AdminDashboardPage = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Buscar usuarios..."
+                    placeholder="Buscar por nombre o correo..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
-                <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg">
-                  <Filter className="w-4 h-4" />
+                <button
+                  className={`p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg ${sortBy === "role" ? "bg-gray-200 dark:bg-gray-700" : ""}`}
+                  onClick={() => {
+                    setSortBy("role");
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                  }}
+                >
+                  Ordenar por Rol
+                </button>
+                <button
+                  className={`p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg ${sortBy === "createdAt" ? "bg-gray-200 dark:bg-gray-700" : ""}`}
+                  onClick={() => {
+                    setSortBy("createdAt");
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                  }}
+                >
+                  Ordenar por Fecha
+                </button>
+                <button
+                  onClick={exportUsersCSV}
+                  className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Exportar
                 </button>
                 <button
                   onClick={() => setShowUserModal(true)}
@@ -466,7 +568,7 @@ const AdminDashboardPage = () => {
                         Estado
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Último Acceso
+                        fecha de creacion
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Portafolios
@@ -477,7 +579,7 @@ const AdminDashboardPage = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {users.map((user) => (
+                    {sortedUsers.map((user) => (
                       <tr
                         key={user.id}
                         className="hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -533,7 +635,12 @@ const AdminDashboardPage = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center space-x-2">
-                            {/* Acciones aquí */}
+                            <button
+                              className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                              onClick={() => handleDeleteUser(user.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -751,12 +858,23 @@ const AdminDashboardPage = () => {
       </div>
 
       {/* User Modal */}
-      <UserModal show={showUserModal} onClose={() => setShowUserModal(false)} />
+      <UserModal
+        show={showUserModal}
+        onClose={() => setShowUserModal(false)}
+        onUserAdded={fetchUsers}
+      />
 
       {/* Semester Modal */}
       <SemesterModal
         show={showSemesterModal}
         onClose={() => setShowSemesterModal(false)}
+      />
+      <ConfirmAlert
+        show={showConfirmAlert}
+        onClose={() => setShowConfirmAlert(false)}
+        onConfirm={confirmDeleteUser}
+        title="Confirmar Eliminación"
+        message="¿Estás seguro de que quieres eliminar a este usuario? Esta acción no se puede deshacer."
       />
     </div>
   );
