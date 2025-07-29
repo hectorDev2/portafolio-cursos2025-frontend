@@ -1,17 +1,13 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Users,
   BookOpen,
   Calendar,
   BarChart3,
-  TrendingUp,
-  TrendingDown,
   UserCheck,
-  UserX,
   FileText,
   CheckCircle,
-  AlertCircle,
   Clock,
   Settings,
   Search,
@@ -19,25 +15,25 @@ import {
   Download,
   Plus,
   Edit,
-  Trash2,
   Eye,
   Shield,
-  Award,
   Activity,
   Zap,
   Server,
   HardDrive,
+  Trash2,
 } from "lucide-react";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: "teacher" | "admin" | "evaluator";
-  status: "active" | "inactive" | "pending";
-  lastLogin: string;
-  portfolios: number;
-}
+import StatCard from "./components/StatCard";
+import {
+  getRoleColor,
+  getStatusColor,
+  getStatusIcon,
+} from "./components/StatusHelpers";
+import UserModal from "./components/UserModal";
+import SemesterModal from "./components/SemesterModal";
+import ConfirmAlert from "./components/ConfirmAlert";
+import Cookies from "js-cookie";
+import { useIsAuthenticated } from "../dashboard/hooks/useIsAuthenticated";
 
 interface Portfolio {
   id: string;
@@ -54,6 +50,7 @@ interface Semester {
   id: string;
   name: string;
   startDate: string;
+
   endDate: string;
   status: "active" | "upcoming" | "completed";
   portfolios: number;
@@ -62,61 +59,16 @@ interface Semester {
 
 const AdminDashboardPage = () => {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "portfolios" | "semesters"
-  >("overview");
+    "users" | "portfolios" | "semesters"
+  >("users");
   const [showUserModal, setShowUserModal] = useState(false);
   const [showSemesterModal, setShowSemesterModal] = useState(false);
-
-  // Mock data
-  const stats = {
-    totalUsers: 245,
-    activeUsers: 198,
-    totalPortfolios: 156,
-    completedPortfolios: 89,
-    pendingReviews: 23,
-    activeSemesters: 2,
-    systemUptime: "99.9%",
-    storageUsed: "2.3 TB",
-  };
-
-  const users: User[] = [
-    {
-      id: "1",
-      name: "Dr. María González",
-      email: "maria.gonzalez@universidad.edu",
-      role: "teacher",
-      status: "active",
-      lastLogin: "2024-01-15 14:30",
-      portfolios: 3,
-    },
-    {
-      id: "2",
-      name: "Prof. Carlos Mendoza",
-      email: "carlos.mendoza@universidad.edu",
-      role: "evaluator",
-      status: "active",
-      lastLogin: "2024-01-15 09:15",
-      portfolios: 0,
-    },
-    {
-      id: "3",
-      name: "Dra. Ana Rodríguez",
-      email: "ana.rodriguez@universidad.edu",
-      role: "teacher",
-      status: "inactive",
-      lastLogin: "2024-01-10 16:45",
-      portfolios: 2,
-    },
-    {
-      id: "4",
-      name: "Admin Sistema",
-      email: "admin@universidad.edu",
-      role: "admin",
-      status: "active",
-      lastLogin: "2024-01-15 15:00",
-      portfolios: 0,
-    },
-  ];
+  const [users, setUsers] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"role" | "createdAt" | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [showConfirmAlert, setShowConfirmAlert] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
   const portfolios: Portfolio[] = [
     {
@@ -181,119 +133,113 @@ const AdminDashboardPage = () => {
     },
   ];
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case "admin":
-        return "text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900";
-      case "teacher":
-        return "text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900";
-      case "evaluator":
-        return "text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900";
-      default:
-        return "text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-900";
+  const fetchUsers = async () => {
+    try {
+      const token = Cookies.get("token");
+      const response = await fetch("/api/user/", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Error al obtener usuarios");
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      // Puedes mostrar un mensaje de error aquí si lo deseas
     }
   };
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "text-green-600 dark:text-green-400";
-      case "inactive":
-        return "text-red-600 dark:text-red-400";
-      case "pending":
-        return "text-orange-600 dark:text-orange-400";
-      case "complete":
-        return "text-green-600 dark:text-green-400";
-      case "incomplete":
-        return "text-orange-600 dark:text-orange-400";
-      case "review":
-        return "text-blue-600 dark:text-blue-400";
-      case "upcoming":
-        return "text-blue-600 dark:text-blue-400";
-      case "completed":
-        return "text-gray-600 dark:text-gray-400";
-      default:
-        return "text-gray-600 dark:text-gray-400";
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "active":
-        return <CheckCircle className="w-4 h-4" />;
-      case "inactive":
-        return <UserX className="w-4 h-4" />;
-      case "pending":
-        return <Clock className="w-4 h-4" />;
-      case "complete":
-        return <CheckCircle className="w-4 h-4" />;
-      case "incomplete":
-        return <AlertCircle className="w-4 h-4" />;
-      case "review":
-        return <Eye className="w-4 h-4" />;
-      case "upcoming":
-        return <Calendar className="w-4 h-4" />;
-      case "completed":
-        return <Award className="w-4 h-4" />;
-      default:
-        return <AlertCircle className="w-4 h-4" />;
-    }
-  };
-
-  interface StatCardProps {
-    title: string;
-    value: number | string;
-    icon: React.ElementType;
-    trend?: "up" | "down";
-    trendValue?: string;
-    color: string;
+  // Filtrar y ordenar usuarios
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const sortedUsers = [...filteredUsers];
+  if (sortBy) {
+    sortedUsers.sort((a, b) => {
+      if (sortBy === "role") {
+        if (a.role < b.role) return sortOrder === "asc" ? -1 : 1;
+        if (a.role > b.role) return sortOrder === "asc" ? 1 : -1;
+        return 0;
+      }
+      if (sortBy === "createdAt") {
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+      }
+      return 0;
+    });
   }
 
-  const StatCard = ({
-    title,
-    value,
-    icon: Icon,
-    trend,
-    trendValue,
-    color,
-  }: StatCardProps) => (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-            {title}
-          </p>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {value}
-          </p>
-          {trend && (
-            <div
-              className={`flex items-center mt-2 ${trend === "up" ? "text-green-600" : "text-red-600"}`}
-            >
-              {trend === "up" ? (
-                <TrendingUp className="w-4 h-4 mr-1" />
-              ) : (
-                <TrendingDown className="w-4 h-4 mr-1" />
-              )}
-              <span className="text-sm font-medium">{trendValue}</span>
-            </div>
-          )}
-        </div>
-        <div
-          className={`w-12 h-12 rounded-lg flex items-center justify-center ${color}`}
-        >
-          <Icon className="w-6 h-6 text-white" />
-        </div>
-      </div>
-    </div>
-  );
+  const handleDeleteUser = (userId: string) => {
+    setUserToDelete(userId);
+    setShowConfirmAlert(true);
+  };
 
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    try {
+      const token = Cookies.get("token");
+      const response = await fetch(`/api/user/${userToDelete}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        setUsers(users.filter((user) => user.id !== userToDelete));
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    } finally {
+      setShowConfirmAlert(false);
+      setUserToDelete(null);
+    }
+  };
+
+  // Exportar lista de usuarios filtrados y ordenados a CSV
+  const exportUsersCSV = () => {
+    const headers = [
+      "Nombre",
+      "Apellido",
+      "Correo",
+      "Rol",
+      "Estado",
+      "Fecha de Creación",
+    ];
+    const rows = sortedUsers.map((user) => [
+      user.name,
+      user.lastName,
+      user.email,
+      user.role,
+      "Activo", // Puedes ajustar según tu lógica de estado
+      user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-",
+    ]);
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += headers.join(",") + "\n";
+    rows.forEach((row) => {
+      csvContent += row.map((cell) => `"${cell ?? ""}"`).join(",") + "\n";
+    });
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "usuarios.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   return (
+    // ...existing code...
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex flex-col sm:flex-row justify-between items-center h-auto sm:h-16 py-2 sm:py-0">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="w-10 h-10 bg-gradient-to-r from-red-600 to-pink-600 rounded-lg flex items-center justify-center">
@@ -322,12 +268,11 @@ const AdminDashboardPage = () => {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Navigation Tabs */}
         <div className="mb-8">
-          <nav className="flex space-x-8">
+          <nav className="flex space-x-4 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 py-2">
             {[
-              { id: "overview", name: "Resumen General", icon: BarChart3 },
               { id: "users", name: "Gestión de Usuarios", icon: Users },
               {
                 id: "portfolios",
@@ -343,11 +288,7 @@ const AdminDashboardPage = () => {
                     key={tab.id}
                     onClick={() =>
                       setActiveTab(
-                        tab.id as
-                          | "overview"
-                          | "users"
-                          | "portfolios"
-                          | "semesters"
+                        tab.id as "users" | "portfolios" | "semesters"
                       )
                     }
                     className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -365,207 +306,48 @@ const AdminDashboardPage = () => {
           </nav>
         </div>
 
-        {/* Overview Tab */}
-        {activeTab === "overview" && (
-          <div className="space-y-8">
-            {/* Main Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard
-                title="Total de Usuarios"
-                value={stats.totalUsers}
-                icon={Users}
-                trend="up"
-                trendValue="+12%"
-                color="bg-gradient-to-r from-blue-500 to-blue-600"
-              />
-              <StatCard
-                title="Usuarios Activos"
-                value={stats.activeUsers}
-                icon={UserCheck}
-                trend="up"
-                trendValue="+8%"
-                color="bg-gradient-to-r from-green-500 to-green-600"
-              />
-              <StatCard
-                title="Total Portafolios"
-                value={stats.totalPortfolios}
-                icon={BookOpen}
-                trend="up"
-                trendValue="+15%"
-                color="bg-gradient-to-r from-purple-500 to-purple-600"
-              />
-              <StatCard
-                title="Portafolios Completos"
-                value={stats.completedPortfolios}
-                icon={CheckCircle}
-                trend="up"
-                trendValue="+22%"
-                color="bg-gradient-to-r from-orange-500 to-orange-600"
-              />
-            </div>
-
-            {/* System Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard
-                title="Revisiones Pendientes"
-                value={stats.pendingReviews}
-                icon={Clock}
-                color="bg-gradient-to-r from-yellow-500 to-yellow-600"
-              />
-              <StatCard
-                title="Semestres Activos"
-                value={stats.activeSemesters}
-                icon={Calendar}
-                color="bg-gradient-to-r from-indigo-500 to-indigo-600"
-              />
-              <StatCard
-                title="Tiempo de Actividad"
-                value={stats.systemUptime}
-                icon={Server}
-                color="bg-gradient-to-r from-teal-500 to-teal-600"
-              />
-              <StatCard
-                title="Almacenamiento Usado"
-                value={stats.storageUsed}
-                icon={HardDrive}
-                color="bg-gradient-to-r from-pink-500 to-pink-600"
-              />
-            </div>
-
-            {/* Charts and Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Activity Chart */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Actividad del Sistema
-                  </h3>
-                  <Activity className="w-5 h-5 text-gray-400" />
-                </div>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Inicios de Sesión
-                    </span>
-                    <div className="flex items-center">
-                      <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-3">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full"
-                          style={{ width: "85%" }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        85%
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Subidas de Archivos
-                    </span>
-                    <div className="flex items-center">
-                      <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-3">
-                        <div
-                          className="bg-green-600 h-2 rounded-full"
-                          style={{ width: "72%" }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        72%
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Evaluaciones
-                    </span>
-                    <div className="flex items-center">
-                      <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-3">
-                        <div
-                          className="bg-purple-600 h-2 rounded-full"
-                          style={{ width: "58%" }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        58%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recent Activity */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Actividad Reciente
-                  </h3>
-                  <Zap className="w-5 h-5 text-gray-400" />
-                </div>
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                      <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-900 dark:text-white">
-                        Nuevo usuario registrado
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Hace 5 minutos
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-900 dark:text-white">
-                        Portafolio completado
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Hace 15 minutos
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                      <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-900 dark:text-white">
-                        Archivo subido al sistema
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Hace 30 minutos
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Users Tab */}
         {activeTab === "users" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Gestión de Usuarios
               </h2>
-              <div className="flex items-center space-x-3">
+              <div className="flex flex-wrap items-center gap-2 sm:space-x-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Buscar usuarios..."
+                    placeholder="Buscar por nombre o correo..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
-                <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg">
-                  <Filter className="w-4 h-4" />
+                <button
+                  className={`p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg ${sortBy === "role" ? "bg-gray-200 dark:bg-gray-700" : ""}`}
+                  onClick={() => {
+                    setSortBy("role");
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                  }}
+                >
+                  Ordenar por Rol
+                </button>
+                <button
+                  className={`p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg ${sortBy === "createdAt" ? "bg-gray-200 dark:bg-gray-700" : ""}`}
+                  onClick={() => {
+                    setSortBy("createdAt");
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                  }}
+                >
+                  Ordenar por Fecha
+                </button>
+                <button
+                  onClick={exportUsersCSV}
+                  className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Exportar
                 </button>
                 <button
                   onClick={() => setShowUserModal(true)}
@@ -578,7 +360,7 @@ const AdminDashboardPage = () => {
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto w-full">
                 <table className="w-full">
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
@@ -592,7 +374,7 @@ const AdminDashboardPage = () => {
                         Estado
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        Último Acceso
+                        fecha de creacion
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Portafolios
@@ -603,7 +385,7 @@ const AdminDashboardPage = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {users.map((user) => (
+                    {sortedUsers.map((user) => (
                       <tr
                         key={user.id}
                         className="hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -612,15 +394,13 @@ const AdminDashboardPage = () => {
                           <div className="flex items-center">
                             <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
                               <span className="text-white font-medium text-sm">
-                                {user.name
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")}
+                                {user.name?.charAt(0)}
+                                {user.lastName?.charAt(0)}
                               </span>
                             </div>
                             <div className="ml-4">
                               <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                {user.name}
+                                {user.name} {user.lastName}
                               </div>
                               <div className="text-sm text-gray-500 dark:text-gray-400">
                                 {user.email}
@@ -632,42 +412,39 @@ const AdminDashboardPage = () => {
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}
                           >
-                            {user.role === "admin"
+                            {user.role === "ADMINISTRADOR"
                               ? "Administrador"
-                              : user.role === "teacher"
+                              : user.role === "DOCENTE"
                                 ? "Docente"
-                                : "Evaluador"}
+                                : user.role === "EVALUADOR"
+                                  ? "Evaluador"
+                                  : user.role}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div
-                            className={`flex items-center ${getStatusColor(user.status)}`}
+                            className={`flex items-center text-green-600 dark:text-green-400`}
                           >
-                            {getStatusIcon(user.status)}
                             <span className="ml-2 text-sm font-medium">
-                              {user.status === "active"
-                                ? "Activo"
-                                : user.status === "inactive"
-                                  ? "Inactivo"
-                                  : "Pendiente"}
+                              Activo
                             </span>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                          {user.lastLogin}
+                          {user.createdAt
+                            ? new Date(user.createdAt).toLocaleDateString()
+                            : "-"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                          {user.portfolios}
+                          {/* Aquí podrías mostrar la cantidad de portafolios si tu API lo provee */}
+                          {user.Portfolio?.length || 0}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                            <button
+                              className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                              onClick={() => handleDeleteUser(user.id)}
+                            >
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
@@ -707,7 +484,7 @@ const AdminDashboardPage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {portfolios.map((portfolio) => (
                 <div
                   key={portfolio.id}
@@ -796,7 +573,7 @@ const AdminDashboardPage = () => {
         {/* Semesters Tab */}
         {activeTab === "semesters" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Gestión de Semestres
               </h2>
@@ -809,7 +586,7 @@ const AdminDashboardPage = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {semesters.map((semester) => (
                 <div
                   key={semester.id}
@@ -887,120 +664,24 @@ const AdminDashboardPage = () => {
       </div>
 
       {/* User Modal */}
-      {showUserModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Crear Nuevo Usuario
-              </h3>
-              <form className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Nombre Completo
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="Ej: Dr. Juan Pérez"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Correo Electrónico
-                  </label>
-                  <input
-                    type="email"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="juan.perez@universidad.edu"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Rol
-                  </label>
-                  <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                    <option value="teacher">Docente</option>
-                    <option value="evaluator">Evaluador</option>
-                    <option value="admin">Administrador</option>
-                  </select>
-                </div>
-              </form>
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={() => setShowUserModal(false)}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => setShowUserModal(false)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Crear Usuario
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <UserModal
+        show={showUserModal}
+        onClose={() => setShowUserModal(false)}
+        onUserAdded={fetchUsers}
+      />
 
       {/* Semester Modal */}
-      {showSemesterModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Crear Nuevo Semestre
-              </h3>
-              <form className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Nombre del Semestre
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="Ej: 2024-II"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Fecha de Inicio
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Fecha de Fin
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-              </form>
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={() => setShowSemesterModal(false)}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => setShowSemesterModal(false)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Crear Semestre
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <SemesterModal
+        show={showSemesterModal}
+        onClose={() => setShowSemesterModal(false)}
+      />
+      <ConfirmAlert
+        show={showConfirmAlert}
+        onClose={() => setShowConfirmAlert(false)}
+        onConfirm={confirmDeleteUser}
+        title="Confirmar Eliminación"
+        message="¿Estás seguro de que quieres eliminar a este usuario? Esta acción no se puede deshacer."
+      />
     </div>
   );
 };

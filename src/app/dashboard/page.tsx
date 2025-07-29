@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 
 import { Course, Document, PersonalDocument, Portfolio } from "./types";
@@ -12,26 +11,14 @@ import { CreatePortfolioModal } from "./components/CreatePortfolioModal";
 import { UploadFileModal } from "./components/UploadFileModal";
 import { CourseDetailModal } from "./components/CourseDetailModal";
 import { AddCourseModal } from "./components/AddCourseModal";
+import { useIsAuthenticated } from "./hooks/useIsAuthenticated";
 
 // ===================================================================================
 // COMPONENTE PRINCIPAL
 // ===================================================================================
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    const token = Cookies.get("token");
-    if (!token) {
-      router.push("/auth");
-    } else {
-      // Para mayor seguridad, aquí podrías agregar una verificación
-      // del token contra un endpoint de tu API.
-      // ej: fetch('/api/auth/verify').then(...)
-      setIsAuthenticated(true);
-    }
-  }, [router]);
+  const { isAuthenticated } = useIsAuthenticated();
 
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string | null>(

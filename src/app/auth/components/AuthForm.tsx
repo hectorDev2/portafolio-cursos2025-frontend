@@ -1,19 +1,6 @@
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import React from "react";
-
-interface AuthFormProps {
-  isLogin: boolean;
-  showPassword: boolean;
-  setShowPassword: (v: boolean) => void;
-  formData: {
-    name?: string;
-    lastName?: string;
-    email: string;
-    password: string;
-  };
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleSubmit: (e: React.FormEvent) => void;
-}
+import { AuthFormProps } from "../interfaces/AuthFormProps.interface";
 
 export default function AuthForm({
   isLogin,
@@ -106,7 +93,7 @@ export default function AuthForm({
             value={formData.email}
             onChange={handleInputChange}
             className="w-full pl-12 pr-4 py-4 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-600 placeholder-gray-500 dark:placeholder-gray-400"
-            placeholder="tu@email.com"
+            placeholder="tu@unsaac.edu.pe"
             required
           />
         </div>
