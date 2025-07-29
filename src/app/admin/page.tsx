@@ -59,29 +59,16 @@ interface Semester {
 
 const AdminDashboardPage = () => {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "users" | "portfolios" | "semesters"
-  >("overview");
+    "users" | "portfolios" | "semesters"
+  >("users");
   const [showUserModal, setShowUserModal] = useState(false);
   const [showSemesterModal, setShowSemesterModal] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"role" | "createdAt" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const { isAuthenticated } = useIsAuthenticated();
   const [showConfirmAlert, setShowConfirmAlert] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
-
-  // Mock data
-  const stats = {
-    totalUsers: 245,
-    activeUsers: 198,
-    totalPortfolios: 156,
-    completedPortfolios: 89,
-    pendingReviews: 23,
-    activeSemesters: 2,
-    systemUptime: "99.9%",
-    storageUsed: "2.3 TB",
-  };
 
   const portfolios: Portfolio[] = [
     {
@@ -252,7 +239,7 @@ const AdminDashboardPage = () => {
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex flex-col sm:flex-row justify-between items-center h-auto sm:h-16 py-2 sm:py-0">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="w-10 h-10 bg-gradient-to-r from-red-600 to-pink-600 rounded-lg flex items-center justify-center">
@@ -281,12 +268,11 @@ const AdminDashboardPage = () => {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Navigation Tabs */}
         <div className="mb-8">
-          <nav className="flex space-x-8">
+          <nav className="flex space-x-4 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 py-2">
             {[
-              { id: "overview", name: "Resumen General", icon: BarChart3 },
               { id: "users", name: "Gestión de Usuarios", icon: Users },
               {
                 id: "portfolios",
@@ -302,11 +288,7 @@ const AdminDashboardPage = () => {
                     key={tab.id}
                     onClick={() =>
                       setActiveTab(
-                        tab.id as
-                          | "overview"
-                          | "users"
-                          | "portfolios"
-                          | "semesters"
+                        tab.id as "users" | "portfolios" | "semesters"
                       )
                     }
                     className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -324,197 +306,14 @@ const AdminDashboardPage = () => {
           </nav>
         </div>
 
-        {/* Overview Tab */}
-        {activeTab === "overview" && (
-          <div className="space-y-8">
-            {/* Main Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard
-                title="Total de Usuarios"
-                value={stats.totalUsers}
-                icon={Users}
-                trend="up"
-                trendValue="+12%"
-                color="bg-gradient-to-r from-blue-500 to-blue-600"
-              />
-              <StatCard
-                title="Usuarios Activos"
-                value={stats.activeUsers}
-                icon={UserCheck}
-                trend="up"
-                trendValue="+8%"
-                color="bg-gradient-to-r from-green-500 to-green-600"
-              />
-              <StatCard
-                title="Total Portafolios"
-                value={stats.totalPortfolios}
-                icon={BookOpen}
-                trend="up"
-                trendValue="+15%"
-                color="bg-gradient-to-r from-purple-500 to-purple-600"
-              />
-              <StatCard
-                title="Portafolios Completos"
-                value={stats.completedPortfolios}
-                icon={CheckCircle}
-                trend="up"
-                trendValue="+22%"
-                color="bg-gradient-to-r from-orange-500 to-orange-600"
-              />
-            </div>
-
-            {/* System Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard
-                title="Revisiones Pendientes"
-                value={stats.pendingReviews}
-                icon={Clock}
-                color="bg-gradient-to-r from-yellow-500 to-yellow-600"
-              />
-              <StatCard
-                title="Semestres Activos"
-                value={stats.activeSemesters}
-                icon={Calendar}
-                color="bg-gradient-to-r from-indigo-500 to-indigo-600"
-              />
-              <StatCard
-                title="Tiempo de Actividad"
-                value={stats.systemUptime}
-                icon={Server}
-                color="bg-gradient-to-r from-teal-500 to-teal-600"
-              />
-              <StatCard
-                title="Almacenamiento Usado"
-                value={stats.storageUsed}
-                icon={HardDrive}
-                color="bg-gradient-to-r from-pink-500 to-pink-600"
-              />
-            </div>
-
-            {/* Charts and Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Activity Chart */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Actividad del Sistema
-                  </h3>
-                  <Activity className="w-5 h-5 text-gray-400" />
-                </div>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Inicios de Sesión
-                    </span>
-                    <div className="flex items-center">
-                      <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-3">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full"
-                          style={{ width: "85%" }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        85%
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Subidas de Archivos
-                    </span>
-                    <div className="flex items-center">
-                      <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-3">
-                        <div
-                          className="bg-green-600 h-2 rounded-full"
-                          style={{ width: "72%" }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        72%
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Evaluaciones
-                    </span>
-                    <div className="flex items-center">
-                      <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-3">
-                        <div
-                          className="bg-purple-600 h-2 rounded-full"
-                          style={{ width: "58%" }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        58%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recent Activity */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Actividad Reciente
-                  </h3>
-                  <Zap className="w-5 h-5 text-gray-400" />
-                </div>
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                      <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-900 dark:text-white">
-                        Nuevo usuario registrado
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Hace 5 minutos
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-900 dark:text-white">
-                        Portafolio completado
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Hace 15 minutos
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                      <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-900 dark:text-white">
-                        Archivo subido al sistema
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Hace 30 minutos
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Users Tab */}
         {activeTab === "users" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Gestión de Usuarios
               </h2>
-              <div className="flex items-center space-x-3">
+              <div className="flex flex-wrap items-center gap-2 sm:space-x-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
@@ -561,7 +360,7 @@ const AdminDashboardPage = () => {
             </div>
 
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto w-full">
                 <table className="w-full">
                   <thead className="bg-gray-50 dark:bg-gray-700">
                     <tr>
@@ -638,7 +437,7 @@ const AdminDashboardPage = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                           {/* Aquí podrías mostrar la cantidad de portafolios si tu API lo provee */}
-                          -
+                          {user.Portfolio?.length || 0}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center space-x-2">
@@ -685,7 +484,7 @@ const AdminDashboardPage = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {portfolios.map((portfolio) => (
                 <div
                   key={portfolio.id}
@@ -774,7 +573,7 @@ const AdminDashboardPage = () => {
         {/* Semesters Tab */}
         {activeTab === "semesters" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Gestión de Semestres
               </h2>
@@ -787,7 +586,7 @@ const AdminDashboardPage = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {semesters.map((semester) => (
                 <div
                   key={semester.id}
