@@ -4,11 +4,6 @@ import {
   Users,
   BookOpen,
   Calendar,
-  BarChart3,
-  UserCheck,
-  FileText,
-  CheckCircle,
-  Clock,
   Settings,
   Search,
   Filter,
@@ -17,13 +12,8 @@ import {
   Edit,
   Eye,
   Shield,
-  Activity,
-  Zap,
-  Server,
-  HardDrive,
   Trash2,
 } from "lucide-react";
-import StatCard from "./components/StatCard";
 import {
   getRoleColor,
   getStatusColor,
@@ -33,7 +23,6 @@ import UserModal from "./components/UserModal";
 import SemesterModal from "./components/SemesterModal";
 import ConfirmAlert from "./components/ConfirmAlert";
 import Cookies from "js-cookie";
-import { useIsAuthenticated } from "../dashboard/hooks/useIsAuthenticated";
 
 interface Portfolio {
   id: string;
@@ -69,39 +58,7 @@ const AdminDashboardPage = () => {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [showConfirmAlert, setShowConfirmAlert] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
-
-  const portfolios: Portfolio[] = [
-    {
-      id: "1",
-      courseName: "Algoritmos y Estructuras de Datos",
-      courseCode: "CS-301",
-      teacherName: "Dr. María González",
-      semester: "2024-I",
-      status: "complete",
-      completionPercentage: 100,
-      lastModified: "2024-01-15",
-    },
-    {
-      id: "2",
-      courseName: "Programación Web",
-      courseCode: "CS-205",
-      teacherName: "Dr. María González",
-      semester: "2024-I",
-      status: "incomplete",
-      completionPercentage: 75,
-      lastModified: "2024-01-10",
-    },
-    {
-      id: "3",
-      courseName: "Base de Datos",
-      courseCode: "CS-302",
-      teacherName: "Dra. Ana Rodríguez",
-      semester: "2024-I",
-      status: "review",
-      completionPercentage: 90,
-      lastModified: "2024-01-12",
-    },
-  ];
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
 
   const semesters: Semester[] = [
     {
