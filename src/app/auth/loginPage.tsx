@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState } from "react";
 import AuthHeader from "./components/AuthHeader";
 import AuthForm from "./components/AuthForm";

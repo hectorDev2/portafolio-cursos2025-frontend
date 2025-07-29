@@ -6,9 +6,14 @@ import { Alert } from "@/app/auth/loginPage";
 interface UserModalProps {
   show: boolean;
   onClose: () => void;
+  onUserAdded?: () => void;
 }
 
-const UserModal: React.FC<UserModalProps> = ({ show, onClose }) => {
+const UserModal: React.FC<UserModalProps> = ({
+  show,
+  onClose,
+  onUserAdded,
+}) => {
   const [formData, setFormData] = useState({
     name: "",
     lastName: "",
@@ -42,8 +47,8 @@ const UserModal: React.FC<UserModalProps> = ({ show, onClose }) => {
           message: "¡Usuario creado exitosamente!",
           type: "success",
         });
+        if (onUserAdded) onUserAdded();
         onClose(); // Close the modal after successful registration
-        router.push("/dashboard");
       } else {
         setAlert({
           message: data.message || "Error en el inicio de sesión",
