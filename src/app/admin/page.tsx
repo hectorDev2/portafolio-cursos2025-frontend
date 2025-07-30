@@ -26,13 +26,14 @@ import Cookies from "js-cookie";
 
 interface Portfolio {
   id: string;
-  courseName: string;
-  courseCode: string;
-  teacherName: string;
+  title: string;
+  description: string;
+  teacherId: string;
   semester: string;
-  status: "complete" | "incomplete" | "review";
-  completionPercentage: number;
-  lastModified: string;
+  createdAt: string;
+  updatedAt: string;
+  cursos?: any[];
+  feedbacks?: any[];
 }
 
 interface Semester {
@@ -93,20 +94,38 @@ const AdminDashboardPage = () => {
   const fetchUsers = async () => {
     try {
       const token = Cookies.get("token");
-      const response = await fetch("/api/user/", {
+      const responseUsers = await fetch("/api/user/", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!response.ok) throw new Error("Error al obtener usuarios");
-      const data = await response.json();
+
+      if (!responseUsers.ok) throw new Error("Error al obtener usuarios");
+      const data = await responseUsers.json();
       setUsers(data);
+    } catch (error) {
+      // Puedes mostrar un mensaje de error aquí si lo deseas
+    }
+  };
+  const fetchPortfolios = async () => {
+    try {
+      const token = Cookies.get("token");
+      const responsePortfolios = await fetch("/api/portfolios/all", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!responsePortfolios.ok)
+        throw new Error("Error al obtener portafolios");
+      const dataPortfolios = await responsePortfolios.json();
+      setPortfolios(dataPortfolios);
     } catch (error) {
       // Puedes mostrar un mensaje de error aquí si lo deseas
     }
   };
   useEffect(() => {
     fetchUsers();
+    fetchPortfolios();
   }, []);
 
   // Filtrar y ordenar usuarios
@@ -442,53 +461,34 @@ const AdminDashboardPage = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {portfolios.map((portfolio) => (
+              {portfolios?.map((portfolio) => (
                 <div
                   key={portfolio.id}
                   className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div
-                      className={`flex items-center space-x-1 ${getStatusColor(portfolio.status)}`}
-                    >
-                      {getStatusIcon(portfolio.status)}
+                    <div className="flex items-center space-x-1 text-blue-600 dark:text-blue-400">
+                      <Eye className="w-4 h-4" />
                       <span className="text-sm font-medium">
-                        {portfolio.status === "complete"
-                          ? "Completo"
-                          : portfolio.status === "incomplete"
-                            ? "Incompleto"
-                            : "En Revisión"}
+                        {portfolio.semester}
                       </span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                        <Edit className="w-4 h-4" />
-                      </button>
                     </div>
                   </div>
 
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    {portfolio.courseName}
+                    {portfolio.title}
                   </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                    {portfolio.description}
+                  </p>
 
                   <div className="space-y-2 mb-4">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600 dark:text-gray-400">
-                        Código:
+                        Docente ID:
                       </span>
                       <span className="text-gray-900 dark:text-white font-medium">
-                        {portfolio.courseCode}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">
-                        Docente:
-                      </span>
-                      <span className="text-gray-900 dark:text-white font-medium">
-                        {portfolio.teacherName}
+                        {portfolio.teacherId}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -504,22 +504,29 @@ const AdminDashboardPage = () => {
                   <div className="mb-4">
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-gray-600 dark:text-gray-400">
-                        Progreso
+                        Creado
                       </span>
                       <span className="text-gray-900 dark:text-white font-medium">
-                        {portfolio.completionPercentage}%
+                        {portfolio.createdAt
+                          ? new Date(portfolio.createdAt).toLocaleDateString()
+                          : "-"}
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div
-                        className="bg-red-600 h-2 rounded-full"
-                        style={{ width: `${portfolio.completionPercentage}%` }}
-                      />
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Actualizado
+                      </span>
+                      <span className="text-gray-900 dark:text-white font-medium">
+                        {portfolio.updatedAt
+                          ? new Date(portfolio.updatedAt).toLocaleDateString()
+                          : "-"}
+                      </span>
                     </div>
                   </div>
 
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Última modificación: {portfolio.lastModified}
+                    Cursos: {portfolio.cursos?.length || 0} | Feedbacks:{" "}
+                    {portfolio.feedbacks?.length || 0}
                   </p>
                 </div>
               ))}
