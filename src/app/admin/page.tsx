@@ -55,7 +55,6 @@ const AdminDashboardPage = () => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showSemesterModal, setShowSemesterModal] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
-  const { userId, token, rol } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"role" | "createdAt" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -94,6 +93,8 @@ const AdminDashboardPage = () => {
   ];
 
   const fetchUsers = async () => {
+    const token = Cookies.get("token");
+    if (!token) return;
     try {
       const responseUsers = await fetch("/api/user/", {
         headers: {
@@ -125,10 +126,6 @@ const AdminDashboardPage = () => {
     }
   };
   useEffect(() => {
-    if (rol !== "ADMINISTRADOR") {
-      window.location.href = "/dashboard";
-      return;
-    }
     fetchUsers();
     fetchPortfolios();
   }, []);
