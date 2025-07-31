@@ -16,6 +16,7 @@ export interface Course {
   code?: string;
   silabo: Document;
   avanceCurso: Document;
+  registroEntregaSilabo: Document;
 }
 
 export interface Feedback {

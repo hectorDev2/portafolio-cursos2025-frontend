@@ -24,8 +24,6 @@ export const CourseDetailModal = ({
     name: string;
     type: string;
   } | null>(null);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [showIframe, setShowIframe] = useState(false);
   const [courseData, setCourseData] = useState<Course | null>(null);
 
   useEffect(() => {
@@ -86,6 +84,38 @@ export const CourseDetailModal = ({
                   try {
                     const response = await fetch(
                       `/api/${courseData.silabo.fileUrl}`,
+                      {
+                        credentials: "include",
+                        headers: {
+                          Authorization: `Bearer ${Cookies.get("token")}`,
+                        },
+                      }
+                    );
+                    if (!response.ok)
+                      throw new Error("Error al obtener el PDF");
+                    const blob = await response.blob();
+                    const pdfBlobUrl = URL.createObjectURL(blob);
+                    window.open(pdfBlobUrl, "_blank");
+                  } catch (error) {
+                    alert("No se pudo cargar el PDF");
+                  }
+                }
+              : undefined
+          }
+        />
+        <DocumentRow
+          name="Entrega Sílabo"
+          status={courseData?.registroEntregaSilabo ? "uploaded" : "missing"}
+          icon={<FileText className="h-5 w-5 text-gray-500" />}
+          onUpload={() =>
+            handleOpenUploadModal("Entrega Sílabo", "registro-entrega-silabo")
+          }
+          onView={
+            courseData?.registroEntregaSilabo
+              ? async () => {
+                  try {
+                    const response = await fetch(
+                      `/api/${courseData.registroEntregaSilabo.fileUrl}`,
                       {
                         credentials: "include",
                         headers: {
