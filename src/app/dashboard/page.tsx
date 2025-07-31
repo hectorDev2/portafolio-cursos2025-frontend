@@ -12,7 +12,6 @@ import { UploadFileModal } from "./components/UploadFileModal";
 import { CourseDetailModal } from "./components/CourseDetailModal";
 import { AddCourseModal } from "./components/AddCourseModal";
 import { useIsAuthenticated } from "./hooks/useIsAuthenticated";
-import { useAuth } from "../shared/hooks/useAuth";
 
 // ===================================================================================
 // COMPONENTE PRINCIPAL
@@ -51,6 +50,7 @@ export default function DashboardPage() {
     if (isAuthenticated) {
       fetchPortfolios();
     }
+    console.log(`isAuthenticated: ${isAuthenticated}`);
   }, [isAuthenticated]);
 
   const refreshPortfolios = () => {
