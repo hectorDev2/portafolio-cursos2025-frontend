@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import { BookOpenCheck, ChevronDown, LogOut, Settings } from "lucide-react";
+import { useAuth } from "@/app/shared/hooks/useUser";
 
 interface User {
   name: string;
   email: string;
+  id: string;
   // Puedes añadir más campos como lastName, role, etc. según tu API
 }
 
@@ -22,7 +23,7 @@ interface DecodedToken {
 
 export const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useAuth();
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
 
@@ -32,30 +33,8 @@ export const Header = () => {
 
   useEffect(() => {
     if (!isClient) return;
-    
-    const fetchUserData = async () => {
-      const token = Cookies.get("token");
-      if (!token) {
-        router.push("/auth");
-        return;
-      }
 
-      try {
-        const decoded: DecodedToken = jwtDecode(token);
-        // Opcional pero recomendado: Verificar si el token ha expirado
-        if (decoded.exp * 1000 < Date.now()) {
-          Cookies.remove("token");
-          router.push("/auth");
-          return;
-        }
-        setUser({ name: decoded.name, email: decoded.email });
-      } catch (error) {
-        console.error("Token inválido o expirado:", error);
-        Cookies.remove("token");
-        router.push("/auth");
-      }
-    };
-
+    const fetchUserData = async () => {};
     fetchUserData();
   }, [router, isClient]);
 
