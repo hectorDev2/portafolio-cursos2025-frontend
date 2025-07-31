@@ -23,6 +23,7 @@ import UserModal from "./components/UserModal";
 import SemesterModal from "./components/SemesterModal";
 import ConfirmAlert from "./components/ConfirmAlert";
 import Cookies from "js-cookie";
+import { useAuth } from "../shared/hooks/useAuth";
 
 interface Portfolio {
   id: string;
@@ -54,6 +55,7 @@ const AdminDashboardPage = () => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showSemesterModal, setShowSemesterModal] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
+  const { userId, token, rol } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"role" | "createdAt" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -93,7 +95,6 @@ const AdminDashboardPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const token = Cookies.get("token");
       const responseUsers = await fetch("/api/user/", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -124,6 +125,10 @@ const AdminDashboardPage = () => {
     }
   };
   useEffect(() => {
+    if (rol !== "ADMINISTRADOR") {
+      window.location.href = "/dashboard";
+      return;
+    }
     fetchUsers();
     fetchPortfolios();
   }, []);

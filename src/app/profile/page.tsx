@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   User,
   Mail,
@@ -10,58 +10,134 @@ import {
   Save,
   Camera,
 } from "lucide-react";
-
-interface UserProfile {
-  name: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  address: string;
-  dateOfBirth: string;
-  biography: string;
-  profileImage: string;
-}
+import { useAuth } from "../shared/hooks/useAuth";
 
 const ProfilePage = () => {
+  const [loading, setLoading] = useState(true);
+  const { userId, token } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
+  const [tempProfile, setTempProfile] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [error, setError] = useState("");
+  const [localBirthDate, setLocalBirthDate] = useState<string>("");
 
-  const [profile, setProfile] = useState<UserProfile>({
-    name: "María",
-    lastName: "González",
-    email: "maria.gonzalez@universidad.edu",
-    phoneNumber: "+51 987 654 321",
-    address: "Av. Universitaria 1801, San Miguel, Lima",
-    dateOfBirth: "1985-03-15",
-    biography:
-      "Doctora en Ciencias de la Computación con más de 15 años de experiencia en docencia e investigación. Especializada en algoritmos, estructuras de datos y programación. Ha publicado más de 30 artículos en revistas indexadas y dirigido múltiples tesis de pregrado y posgrado.",
-    profileImage:
-      "https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg?auto=compress&cs=tinysrgb&w=400",
-  });
+  useEffect(() => {
+    if (profile?.dateOfBirth) {
+      // Solo en el cliente, formatea la fecha localmente
+      setLocalBirthDate(
+        new Date(profile.dateOfBirth).toLocaleDateString("es-ES", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      );
+    } else {
+      setLocalBirthDate("");
+    }
+  }, [profile?.dateOfBirth]);
 
-  const [tempProfile, setTempProfile] = useState<UserProfile>(profile);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!userId) {
+        setError("No profile ID found");
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await fetch(`/api/user/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error("Error fetching profile data");
+        }
+        const data = await response.json();
+        // Restaurar todos los datos relevantes
+        const allowed = {
+          name: data.name,
+          email: data.email,
+          profileImage: data.profileImage,
+          phoneNumber: data.phoneNumber || "",
+          address: data.address || "",
+          dateOfBirth: data.dateOfBirth || "",
+          biography: data.biography || "",
+        };
+        setProfile(allowed);
+        setTempProfile(allowed);
+      } catch (err) {
+        setError("Failed to load profile data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [token, setLoading, setError, loading, userId]);
 
   const handleEdit = () => {
     setTempProfile(profile);
     setIsEditing(true);
   };
-
-  const handleSave = () => {
-    setProfile(tempProfile);
-    setIsEditing(false);
+  const handleSave = async (id: string) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/user/${id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(tempProfile),
+      });
+      if (!response.ok) throw new Error("Error al guardar cambios");
+      const updated = await response.json();
+      // Restaurar todos los datos relevantes
+      const allowed = {
+        name: updated.name,
+        email: updated.email,
+        profileImage: updated.profileImage,
+        phoneNumber: updated.phoneNumber || "",
+        address: updated.address || "",
+        dateOfBirth: updated.dateOfBirth || "",
+        biography: updated.biography || "",
+      };
+      console.log(allowed, "🚀 ~ handleSave ~ allowed:", allowed);
+      setProfile(allowed);
+      setTempProfile(allowed);
+      setIsEditing(false);
+    } catch (err) {
+      setError("No se pudo guardar el perfil");
+    } finally {
+      setLoading(false);
+    }
   };
-
   const handleCancel = () => {
     setTempProfile(profile);
     setIsEditing(false);
   };
-
-  const handleInputChange = (field: keyof UserProfile, value: string) => {
-    setTempProfile({ ...tempProfile, [field]: value });
+  const handleInputChange = (field: string, value: string) => {
+    // Permitir todos los campos relevantes
+    if (
+      [
+        "name",
+        "email",
+        "profileImage",
+        "phoneNumber",
+        "address",
+        "dateOfBirth",
+        "biography",
+      ].includes(field)
+    ) {
+      setTempProfile({ ...tempProfile, [field]: value });
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div
+      suppressHydrationWarning
+      className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8"
+    >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
@@ -71,7 +147,13 @@ const ProfilePage = () => {
               <div className="relative">
                 <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-lg">
                   <img
-                    src={profile.profileImage}
+                    src={
+                      profile?.profileImage
+                        ? profile.profileImage
+                        : profile?.name
+                          ? "https://ui-avatars.com/api/?name=" + profile?.name
+                          : "https://ui-avatars.com/api/?name=Usuario"
+                    }
                     alt="Profile"
                     className="w-full h-full object-cover"
                   />
@@ -89,11 +171,11 @@ const ProfilePage = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
                   <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                      {profile.name} {profile.lastName}
+                      {profile?.name || ""}
                     </h1>
                   </div>
                   <button
-                    onClick={isEditing ? handleSave : handleEdit}
+                    onClick={isEditing ? () => handleSave(userId!) : handleEdit}
                     className="mt-4 sm:mt-0 flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                   >
                     {isEditing ? (
@@ -119,7 +201,7 @@ const ProfilePage = () => {
                   onClick={handleCancel}
                   className="flex items-center px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
-                  <button className="w-4 h-4 mr-2" />
+                  <span className="w-4 h-4 mr-2" />
                   Cancelar
                 </button>
               </div>
@@ -143,7 +225,7 @@ const ProfilePage = () => {
                     {isEditing ? (
                       <input
                         type="text"
-                        value={tempProfile.name}
+                        value={tempProfile?.name || ""}
                         onChange={(e) =>
                           handleInputChange("name", e.target.value)
                         }
@@ -153,35 +235,11 @@ const ProfilePage = () => {
                       <div className="flex items-center px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <User className="w-5 h-5 text-gray-400 mr-3" />
                         <span className="text-gray-900 dark:text-white">
-                          {profile.name}
+                          {profile?.name}
                         </span>
                       </div>
                     )}
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Apellido
-                    </label>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={tempProfile.lastName}
-                        onChange={(e) =>
-                          handleInputChange("lastName", e.target.value)
-                        }
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                    ) : (
-                      <div className="flex items-center px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <User className="w-5 h-5 text-gray-400 mr-3" />
-                        <span className="text-gray-900 dark:text-white">
-                          {profile.lastName}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Correo Electrónico
@@ -189,7 +247,7 @@ const ProfilePage = () => {
                     {isEditing ? (
                       <input
                         type="email"
-                        value={tempProfile.email}
+                        value={tempProfile?.email || ""}
                         onChange={(e) =>
                           handleInputChange("email", e.target.value)
                         }
@@ -199,12 +257,11 @@ const ProfilePage = () => {
                       <div className="flex items-center px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <Mail className="w-5 h-5 text-gray-400 mr-3" />
                         <span className="text-gray-900 dark:text-white">
-                          {profile.email}
+                          {profile?.email || ""}
                         </span>
                       </div>
                     )}
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Teléfono
@@ -212,7 +269,7 @@ const ProfilePage = () => {
                     {isEditing ? (
                       <input
                         type="tel"
-                        value={tempProfile.phoneNumber}
+                        value={tempProfile?.phoneNumber || ""}
                         onChange={(e) =>
                           handleInputChange("phoneNumber", e.target.value)
                         }
@@ -222,20 +279,19 @@ const ProfilePage = () => {
                       <div className="flex items-center px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <Phone className="w-5 h-5 text-gray-400 mr-3" />
                         <span className="text-gray-900 dark:text-white">
-                          {profile.phoneNumber}
+                          {profile?.phoneNumber || ""}
                         </span>
                       </div>
                     )}
                   </div>
-
-                  <div className="md:col-span-2">
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Dirección
                     </label>
                     {isEditing ? (
                       <input
                         type="text"
-                        value={tempProfile.address}
+                        value={tempProfile?.address || ""}
                         onChange={(e) =>
                           handleInputChange("address", e.target.value)
                         }
@@ -245,12 +301,11 @@ const ProfilePage = () => {
                       <div className="flex items-center px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <MapPin className="w-5 h-5 text-gray-400 mr-3" />
                         <span className="text-gray-900 dark:text-white">
-                          {profile.address}
+                          {profile?.address || ""}
                         </span>
                       </div>
                     )}
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Fecha de Nacimiento
@@ -258,7 +313,7 @@ const ProfilePage = () => {
                     {isEditing ? (
                       <input
                         type="date"
-                        value={tempProfile.dateOfBirth}
+                        value={tempProfile?.dateOfBirth || ""}
                         onChange={(e) =>
                           handleInputChange("dateOfBirth", e.target.value)
                         }
@@ -268,43 +323,42 @@ const ProfilePage = () => {
                       <div className="flex items-center px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <Calendar className="w-5 h-5 text-gray-400 mr-3" />
                         <span className="text-gray-900 dark:text-white">
-                          {new Date(profile.dateOfBirth).toLocaleDateString(
-                            "es-ES",
-                            {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            }
-                          )}
+                          {profile?.dateOfBirth
+                            ? localBirthDate ||
+                              new Date(profile.dateOfBirth)
+                                .toISOString()
+                                .split("T")[0]
+                            : ""}
                         </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Biografía
+                    </label>
+                    {isEditing ? (
+                      <textarea
+                        value={tempProfile?.biography || ""}
+                        onChange={(e) =>
+                          handleInputChange("biography", e.target.value)
+                        }
+                        rows={4}
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        placeholder="Describe tu experiencia profesional y académica..."
+                      />
+                    ) : (
+                      <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <p className="text-gray-900 dark:text-white leading-relaxed">
+                          {profile?.biography || ""}
+                        </p>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div>
-                <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-4">
-                  Biografía
-                </h4>
-                {isEditing ? (
-                  <textarea
-                    value={tempProfile.biography}
-                    onChange={(e) =>
-                      handleInputChange("biography", e.target.value)
-                    }
-                    rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    placeholder="Describe tu experiencia profesional y académica..."
-                  />
-                ) : (
-                  <div className="px-4 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <p className="text-gray-900 dark:text-white leading-relaxed">
-                      {profile.biography}
-                    </p>
-                  </div>
-                )}
-              </div>
+              {/* ...existing code... */}
             </div>
           </div>
         </div>
@@ -323,14 +377,20 @@ const ProfilePage = () => {
                   onClick={() => setShowImageModal(false)}
                   className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <button className="w-5 h-5" />
+                  <Camera className="w-5 h-5" />
                 </button>
               </div>
 
               <div className="text-center">
                 <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-gray-200 dark:border-gray-600">
                   <img
-                    src={profile.profileImage}
+                    src={
+                      profile && profile.profileImage
+                        ? profile.profileImage
+                        : profile && profile.name
+                          ? "https://ui-avatars.com/api/?name=" + profile.name
+                          : "https://ui-avatars.com/api/?name=Usuario"
+                    }
                     alt="Profile Preview"
                     className="w-full h-full object-cover"
                   />
