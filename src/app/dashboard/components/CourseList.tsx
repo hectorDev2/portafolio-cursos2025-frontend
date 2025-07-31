@@ -57,6 +57,12 @@ export const CourseList = ({ courses, onCourseClick }: CourseListProps) => {
                     }
                     text="Avance"
                   />
+                  <StatusIndicator
+                    status={
+                      course?.avanceCurso?.fileUrl ? "uploaded" : "missing"
+                    }
+                    text="Registro entrega de Sílabo"
+                  />
                 </div>
               </button>
             ))
