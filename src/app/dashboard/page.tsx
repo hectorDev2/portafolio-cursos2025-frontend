@@ -12,6 +12,7 @@ import { UploadFileModal } from "./components/UploadFileModal";
 import { CourseDetailModal } from "./components/CourseDetailModal";
 import { AddCourseModal } from "./components/AddCourseModal";
 import { useIsAuthenticated } from "./hooks/useIsAuthenticated";
+import { useAuth } from "../shared/hooks/useAuth";
 
 // ===================================================================================
 // COMPONENTE PRINCIPAL
@@ -19,7 +20,7 @@ import { useIsAuthenticated } from "./hooks/useIsAuthenticated";
 
 export default function DashboardPage() {
   const { isAuthenticated } = useIsAuthenticated();
-
+  const { userId, token, rol } = useAuth();
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string | null>(
     null
