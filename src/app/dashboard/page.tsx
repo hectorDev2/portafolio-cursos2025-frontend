@@ -208,14 +208,6 @@ export default function DashboardPage() {
     setModals((prev) => ({ ...prev, [modalName]: null }));
   };
 
-  if (!isAuthenticated) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-gray-100 dark:bg-gray-900">
-        <p className="text-gray-500 dark:text-gray-400">Verificando...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="flex h-screen flex-col bg-gray-100 dark:bg-gray-900">
       <Header />
