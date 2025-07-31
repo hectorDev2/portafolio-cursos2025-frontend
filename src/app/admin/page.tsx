@@ -23,7 +23,6 @@ import UserModal from "./components/UserModal";
 import SemesterModal from "./components/SemesterModal";
 import ConfirmAlert from "./components/ConfirmAlert";
 import Cookies from "js-cookie";
-import { useAuth } from "../shared/hooks/useAuth";
 
 interface Portfolio {
   id: string;

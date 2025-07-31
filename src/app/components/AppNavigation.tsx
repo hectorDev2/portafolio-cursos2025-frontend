@@ -64,21 +64,7 @@ export default function AppNavigation() {
         >
           <LayoutDashboard className="w-6 h-6" />
         </button>
-        <button
-          onClick={() => router.push("/profile")}
-          className={`p-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 ${
-            pathname === "/profile"
-              ? isDarkMode
-                ? "bg-emerald-600 text-white"
-                : "bg-emerald-600 text-white"
-              : isDarkMode
-                ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                : "bg-white text-gray-600 hover:bg-gray-100"
-          }`}
-          title="Perfil de Usuario"
-        >
-          <User className="w-6 h-6" />
-        </button>
+
         <button
           onClick={() => router.push("/admin")}
           className={`p-3 rounded-full shadow-lg transition-all duration-300 transform hover:scale-110 ${
