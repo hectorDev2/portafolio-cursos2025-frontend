@@ -6,7 +6,8 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:3001/:path*", // Proxy to Backend
+        destination:
+          "https://portafolio-cursos2025-backend-production.up.railway.app/:path*", // Proxy to Backend
       },
     ];
   },
