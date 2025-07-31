@@ -20,7 +20,6 @@ import { useAuth } from "../shared/hooks/useAuth";
 
 export default function DashboardPage() {
   const { isAuthenticated } = useIsAuthenticated();
-  const { userId, token, rol } = useAuth();
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string | null>(
     null
